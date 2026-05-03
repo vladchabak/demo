@@ -1,0 +1,9 @@
+spring:
+  jpa:
+    show-sql: true
+  flyway:
+    enabled: false   # disabled in dev until DB is ready
+
+logging:
+  level:
+    com.localpro: DEBUG

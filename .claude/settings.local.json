@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//mnt/c/Users/vladc/IdeaProjects/**)",
+      "Bash(./mvnw dependency:resolve -q)",
+      "PowerShell(cd \"C:\\\\Users\\\\vladc\\\\IdeaProjects\\\\demo\"; .\\\\mvnw.cmd compile -q 2>&1 | Where-Object { $_ -notmatch \"^WARNING\" })"
+    ]
+  }
+}

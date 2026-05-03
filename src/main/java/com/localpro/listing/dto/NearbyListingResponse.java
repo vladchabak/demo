@@ -1,0 +1,33 @@
+package com.localpro.listing.dto;
+
+import com.localpro.listing.ListingStatus;
+import com.localpro.listing.PriceType;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+
+public record NearbyListingResponse(
+        UUID id,
+        String title,
+        String description,
+        UUID categoryId,
+        String categoryName,
+        UUID providerId,
+        String providerName,
+        String providerAvatarUrl,
+        BigDecimal providerRating,
+        BigDecimal price,
+        PriceType priceType,
+        String address,
+        String city,
+        ListingStatus status,
+        Integer viewCount,
+        List<String> photoUrls,
+        Instant createdAt,
+        Double distanceMeters,
+        String distanceLabel,
+        Double lat,
+        Double lng
+) {}

@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:tc:postgis:16-3.4:///localpro_test
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  flyway:
+    enabled: true
