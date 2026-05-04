@@ -39,7 +39,16 @@ public class FirebaseTokenFilter extends OncePerRequestFilter {
         }
 
         if (FirebaseApp.getApps().isEmpty()) {
-            log.debug("Firebase not configured, skipping auth");
+            // Dev mode: accept "Bearer dev-token" to authenticate as the first DB user
+            if ("dev-token".equals(header.substring(7))) {
+                log.debug("Dev mode: authenticating with dev-token");
+                User devUser = userService.getOrCreateDevUser();
+                UsernamePasswordAuthenticationToken auth =
+                        new UsernamePasswordAuthenticationToken(devUser, null, Collections.emptyList());
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            } else {
+                log.debug("Firebase not configured, skipping auth");
+            }
             chain.doFilter(request, response);
             return;
         }

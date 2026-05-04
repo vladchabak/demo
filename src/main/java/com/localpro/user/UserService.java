@@ -3,9 +3,11 @@ package com.localpro.user;
 import com.localpro.user.dto.UpdateProfileRequest;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -37,6 +39,20 @@ public class UserService {
     public User getById(UUID id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found: " + id));
+    }
+
+    public User getOrCreateDevUser() {
+        List<User> users = userRepository.findAll(PageRequest.of(0, 1)).getContent();
+        if (!users.isEmpty()) {
+            return users.get(0);
+        }
+        User devUser = User.builder()
+                .firebaseUid("dev-user-001")
+                .email("dev@localpro.com")
+                .name("Dev User")
+                .role(UserRole.BOTH)
+                .build();
+        return userRepository.save(devUser);
     }
 
     public void updateFcmToken(UUID userId, String token) {
