@@ -80,7 +80,7 @@ public class ListingService {
     }
 
     public ServiceListing getById(UUID id) {
-        ServiceListing listing = listingRepository.findById(id)
+        ServiceListing listing = listingRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new EntityNotFoundException("Listing not found: " + id));
         listing.setViewCount(listing.getViewCount() + 1);
         return listingRepository.save(listing);

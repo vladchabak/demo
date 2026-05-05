@@ -10,12 +10,10 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
-import java.util.Collections;
 import java.util.Map;
 
 @Configuration
@@ -53,8 +51,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                     Map<String, Object> attrs = accessor.getSessionAttributes();
                     if (attrs != null && attrs.containsKey("userId")) {
                         String userId = (String) attrs.get("userId");
-                        accessor.setUser(new UsernamePasswordAuthenticationToken(
-                                userId, null, Collections.emptyList()));
+                        accessor.setUser(new StompPrincipal(userId));
                     }
                 }
                 return message;

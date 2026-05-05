@@ -16,6 +16,15 @@ public interface ServiceListingRepository extends JpaRepository<ServiceListing, 
 
     Optional<ServiceListing> findByIdAndProviderId(UUID id, UUID providerId);
 
+    @Query("""
+            SELECT sl FROM ServiceListing sl
+            LEFT JOIN FETCH sl.category
+            LEFT JOIN FETCH sl.provider
+            LEFT JOIN FETCH sl.photos
+            WHERE sl.id = :id
+            """)
+    Optional<ServiceListing> findByIdWithDetails(@Param("id") UUID id);
+
     @Query(value = """
             SELECT sl.* FROM service_listings sl
             WHERE ST_DWithin(sl.location, ST_MakePoint(:lng, :lat)::geography, :radiusMeters)

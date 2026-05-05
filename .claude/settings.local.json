@@ -3,7 +3,19 @@
     "allow": [
       "Read(//mnt/c/Users/vladc/IdeaProjects/**)",
       "Bash(./mvnw dependency:resolve -q)",
-      "PowerShell(cd \"C:\\\\Users\\\\vladc\\\\IdeaProjects\\\\demo\"; .\\\\mvnw.cmd compile -q 2>&1 | Where-Object { $_ -notmatch \"^WARNING\" })"
+      "PowerShell(cd \"C:\\\\Users\\\\vladc\\\\IdeaProjects\\\\demo\"; .\\\\mvnw.cmd compile -q 2>&1 | Where-Object { $_ -notmatch \"^WARNING\" })",
+      "Bash(./mvnw compile *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\vladc\\\\IdeaProjects\\\\demo\" -Directory)",
+      "Bash(Select-Object Name)",
+      "Bash(flutter analyze *)",
+      "Bash(lsof -ti:8080)",
+      "Bash(./mvnw spring-boot:run -q)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/actuator/health)",
+      "Bash(curl -s -H \"Authorization: Bearer dev-token\" http://localhost:8080/api/chats)",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s -X POST -H 'Authorization: Bearer dev-token' -H 'Content-Type: application/json' -d '{\"content\":\"Hello!\"}' -w '\\\\nHTTP %{http_code}' http://localhost:8080/api/chats/f1642a3b-94b4-4fc1-a2ea-f4895431bf16/messages)",
+      "Bash(fuser -k 8080/tcp)",
+      "Bash(curl *)"
     ]
   }
 }

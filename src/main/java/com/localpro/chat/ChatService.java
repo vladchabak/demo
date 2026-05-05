@@ -6,7 +6,9 @@ import com.localpro.listing.ServiceListing;
 import com.localpro.listing.ServiceListingRepository;
 import com.localpro.user.User;
 import com.localpro.user.UserRepository;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +26,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ChatService {
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     private final ChatRepository chatRepository;
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
@@ -31,9 +36,10 @@ public class ChatService {
     private final MessageMapper messageMapper;
     private final SimpMessagingTemplate messagingTemplate;
 
-    public Chat getOrCreateChat(UUID clientId, UUID providerId, UUID listingId) {
-        return chatRepository
+    public ChatSummaryResponse getOrCreateChat(UUID clientId, UUID providerId, UUID listingId) {
+        Chat chat = chatRepository
                 .findByClientIdAndProviderIdAndListingId(clientId, providerId, listingId)
+                .map(existing -> chatRepository.findByIdWithDetails(existing.getId()).orElse(existing))
                 .orElseGet(() -> {
                     User client = loadUser(clientId);
                     User provider = loadUser(providerId);
@@ -49,8 +55,10 @@ public class ChatService {
                         builder.listing(listing);
                     }
 
-                    return chatRepository.save(builder.build());
+                    Chat saved = chatRepository.save(builder.build());
+                    return chatRepository.findByIdWithDetails(saved.getId()).orElse(saved);
                 });
+        return buildSummary(chat, clientId);
     }
 
     public ChatSummaryResponse buildSummary(Chat chat, UUID userId) {
@@ -75,13 +83,13 @@ public class ChatService {
     @Transactional(readOnly = true)
     public List<ChatSummaryResponse> getChats(UUID userId) {
         return chatRepository
-                .findByClientIdOrProviderIdOrderByLastMessageAtDesc(userId, userId)
+                .findAllByUserIdWithDetails(userId)
                 .stream()
                 .map(chat -> buildSummary(chat, userId))
                 .toList();
     }
 
-    public Message sendMessage(UUID chatId, UUID senderId, String content) {
+    public MessageResponse sendMessage(UUID chatId, UUID senderId, String content) {
         Chat chat = chatRepository.findById(chatId)
                 .orElseThrow(() -> new EntityNotFoundException("Chat not found: " + chatId));
 
@@ -96,6 +104,8 @@ public class ChatService {
                 .content(content)
                 .build();
         Message saved = messageRepository.save(message);
+        entityManager.flush();   // send INSERT to DB so the row exists
+        entityManager.refresh(saved); // read back DB-generated createdAt
 
         chat.setLastMessage(content);
         chat.setLastMessageAt(Instant.now());
@@ -105,12 +115,13 @@ public class ChatService {
                 ? chat.getProvider().getId()
                 : chat.getClient().getId();
 
+        MessageResponse response = messageMapper.toResponse(saved);
         messagingTemplate.convertAndSendToUser(
                 recipientId.toString(),
                 "/queue/messages",
-                messageMapper.toResponse(saved));
+                response);
 
-        return saved;
+        return response;
     }
 
     @Transactional
