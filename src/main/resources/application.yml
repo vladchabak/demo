@@ -6,6 +6,12 @@ spring:
     username: ${DB_USER:localpro}
     password: ${DB_PASS:localpro}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 30000
+      maximum-pool-size: 5
+      data-source-properties:
+        ssl: true
+        sslmode: require
   jpa:
     hibernate:
       ddl-auto: validate
