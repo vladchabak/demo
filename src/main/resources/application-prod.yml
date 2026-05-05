@@ -1,7 +1,12 @@
 spring:
   datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 5
+      connection-timeout: 30000
       data-source-properties:
         ssl: true
         sslmode: require
@@ -9,3 +14,8 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: false
+  flyway:
+    enabled: true
+    url: ${SPRING_DATASOURCE_URL}
+    user: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
