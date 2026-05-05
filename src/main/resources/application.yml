@@ -2,16 +2,13 @@ spring:
   application:
     name: localpro-backend
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/localpro_dev}
-    username: ${DB_USER:localpro}
-    password: ${DB_PASS:localpro}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/localpro_dev}
+    username: ${SPRING_DATASOURCE_USERNAME:localpro}
+    password: ${SPRING_DATASOURCE_PASSWORD:localpro}
     driver-class-name: org.postgresql.Driver
     hikari:
-      connection-timeout: 30000
       maximum-pool-size: 5
-      data-source-properties:
-        ssl: true
-        sslmode: require
+      connection-timeout: 30000
   jpa:
     hibernate:
       ddl-auto: validate
