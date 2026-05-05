@@ -15,7 +15,10 @@
       "Bash(python3 -m json.tool)",
       "Bash(curl -s -X POST -H 'Authorization: Bearer dev-token' -H 'Content-Type: application/json' -d '{\"content\":\"Hello!\"}' -w '\\\\nHTTP %{http_code}' http://localhost:8080/api/chats/f1642a3b-94b4-4fc1-a2ea-f4895431bf16/messages)",
       "Bash(fuser -k 8080/tcp)",
-      "Bash(curl *)"
+      "Bash(curl *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
     ]
   }
 }
