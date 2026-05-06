@@ -16,6 +16,8 @@ spring:
     url: jdbc:postgresql://${PGHOST}:${PGPORT}/${PGDATABASE}
     user: ${PGUSER}
     password: ${PGPASSWORD}
+    baseline-on-migrate: true
+    baseline-version: 0
 
 logging:
   level:
