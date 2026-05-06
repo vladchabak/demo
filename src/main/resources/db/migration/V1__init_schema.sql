@@ -1,5 +1,11 @@
 -- Enable PostGIS
-CREATE EXTENSION IF NOT EXISTS postgis;
+DO $$
+BEGIN
+  CREATE EXTENSION IF NOT EXISTS postgis;
+EXCEPTION WHEN OTHERS THEN
+  RAISE NOTICE 'PostGIS extension not available: %', SQLERRM;
+END;
+$$;
 
 -- Users table
 CREATE TABLE users (
