@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: jdbc:postgresql://${PGHOST}:${PGPORT}/${PGDATABASE}
+    username: ${PGUSER}
+    password: ${PGPASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 3
@@ -13,14 +13,11 @@ spring:
     show-sql: false
   flyway:
     enabled: true
-    url: ${SPRING_DATASOURCE_URL}
-    user: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: jdbc:postgresql://${PGHOST}:${PGPORT}/${PGDATABASE}
+    user: ${PGUSER}
+    password: ${PGPASSWORD}
 
 logging:
   level:
     com.localpro: INFO
     org.springframework.security: WARN
-    org.flywaydb: DEBUG
-    com.zaxxer.hikari: DEBUG
-    org.postgresql: DEBUG
