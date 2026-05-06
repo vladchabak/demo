@@ -21,3 +21,6 @@ logging:
   level:
     com.localpro: INFO
     org.springframework.security: WARN
+    org.flywaydb: DEBUG
+    com.zaxxer.hikari: DEBUG
+    org.postgresql: DEBUG
