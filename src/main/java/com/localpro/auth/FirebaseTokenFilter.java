@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,6 +29,9 @@ public class FirebaseTokenFilter extends OncePerRequestFilter {
 
     private final UserService userService;
 
+    @Autowired(required = false)
+    private FirebaseApp firebaseApp;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -38,7 +42,7 @@ public class FirebaseTokenFilter extends OncePerRequestFilter {
             return;
         }
 
-        if (FirebaseApp.getApps().isEmpty()) {
+        if (firebaseApp == null) {
             // Dev mode: accept "Bearer dev-token" to authenticate as the first DB user
             if ("dev-token".equals(header.substring(7))) {
                 log.debug("Dev mode: authenticating with dev-token");
