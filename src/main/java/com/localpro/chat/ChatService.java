@@ -10,9 +10,10 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -34,7 +36,7 @@ public class ChatService {
     private final UserRepository userRepository;
     private final ServiceListingRepository listingRepository;
     private final MessageMapper messageMapper;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final SimpMessageSendingOperations messagingTemplate;
 
     public ChatSummaryResponse getOrCreateChat(UUID clientId, UUID providerId, UUID listingId) {
         Chat chat = chatRepository
@@ -56,6 +58,7 @@ public class ChatService {
                     }
 
                     Chat saved = chatRepository.save(builder.build());
+                    log.info("User {} started chat {} with provider {}", clientId, saved.getId(), providerId);
                     return chatRepository.findByIdWithDetails(saved.getId()).orElse(saved);
                 });
         return buildSummary(chat, clientId);
@@ -104,6 +107,7 @@ public class ChatService {
                 .content(content)
                 .build();
         Message saved = messageRepository.save(message);
+        log.info("User {} sent message to chat {}", senderId, chatId);
         entityManager.flush();   // send INSERT to DB so the row exists
         entityManager.refresh(saved); // read back DB-generated createdAt
 

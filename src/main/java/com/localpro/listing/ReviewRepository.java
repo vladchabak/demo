@@ -19,4 +19,10 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
     Optional<Double> findAverageRatingByListingId(@Param("listingId") UUID listingId);
 
     long countByListingId(UUID listingId);
+
+    @Query("SELECT AVG(r.rating) FROM Review r WHERE r.listing.provider.id = :providerId")
+    Optional<Double> findAverageRatingByProviderId(@Param("providerId") UUID providerId);
+
+    @Query("SELECT COUNT(r) FROM Review r WHERE r.listing.provider.id = :providerId")
+    long countByProviderId(@Param("providerId") UUID providerId);
 }

@@ -7,6 +7,7 @@ import com.localpro.listing.dto.UpdateListingRequest;
 import com.localpro.user.User;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -48,7 +50,9 @@ public class ListingService {
                 .location(buildPoint(req.lat(), req.lng()))
                 .build();
 
-        return listingRepository.save(listing);
+        ServiceListing saved = listingRepository.save(listing);
+        log.info("Provider {} created listing {}", provider.getId(), saved.getId());
+        return saved;
     }
 
     public ServiceListing update(UUID providerId, UUID listingId, UpdateListingRequest req) {
@@ -77,6 +81,7 @@ public class ListingService {
                 .orElseThrow(() -> new EntityNotFoundException("Listing not found: " + listingId));
         listing.setStatus(ListingStatus.DELETED);
         listingRepository.save(listing);
+        log.info("Provider {} deleted listing {}", providerId, listingId);
     }
 
     public ServiceListing getById(UUID id) {

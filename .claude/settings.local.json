@@ -19,7 +19,24 @@
       "Bash(git add *)",
       "Bash(git commit *)",
       "Bash(git push *)",
-      "Bash(git checkout *)"
+      "Bash(git checkout *)",
+      "Bash(gh pr *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\vladc\\\\IdeaProjects\\\\demo\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Sort-Object)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\vladc\\\\IdeaProjects\\\\demo\" -Recurse | Where-Object { $_.PSIsContainer } | Select-Object -ExpandProperty FullName | Sort-Object)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\vladc\\\\IdeaProjects\\\\demo\\\\src\" -Recurse -Filter \"*.java\")",
+      "Bash(mvn compile *)",
+      "Bash(mvn test-compile *)",
+      "Bash(mvn test *)",
+      "Bash(docker info *)",
+      "Bash(docker context *)",
+      "PowerShell(Get-Item *)",
+      "PowerShell(& \"C:\\\\Program Files\\\\Docker\\\\Docker\\\\resources\\\\bin\\\\docker.exe\" info 2>&1 | Select-Object -First 5)",
+      "PowerShell(& \"C:\\\\Program Files\\\\Docker\\\\Docker\\\\resources\\\\bin\\\\docker.exe\" context ls 2>&1)",
+      "PowerShell(& \"C:\\\\Program Files\\\\Docker\\\\Docker\\\\resources\\\\bin\\\\docker.exe\" --context desktop-linux ps 2>&1)",
+      "PowerShell(& \"C:\\\\Program Files\\\\Docker\\\\Docker\\\\resources\\\\bin\\\\docker.exe\" --context default ps 2>&1 | Select-Object -First 3)",
+      "Bash(grep -v \"^\\\\[INFO\\\\]\\\\|WARNING:\\\\|^$\")"
     ]
   }
 }

@@ -1,13 +1,10 @@
 package com.localpro;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class LocalProApplicationTests {
+class LocalProApplicationTests extends AbstractIntegrationTest {
 
     @Test
     void contextLoads() {
     }
-
 }

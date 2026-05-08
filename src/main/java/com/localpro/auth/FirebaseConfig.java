@@ -3,40 +3,44 @@ package com.localpro.auth;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Configuration
 public class FirebaseConfig {
 
-    @PostConstruct
-    public void initialize() {
-        String credPath = System.getenv("GOOGLE_APPLICATION_CREDENTIALS");
-        if (credPath == null || credPath.isBlank()) {
+    @Value("${FIREBASE_SERVICE_ACCOUNT_JSON:}")
+    private String serviceAccountJson;
+
+    @Bean
+    public FirebaseApp firebaseApp() {
+        if (serviceAccountJson == null || serviceAccountJson.isBlank()) {
             log.warn("Firebase not configured - running in dev mode, all requests will be unauthenticated");
-            return;
+            return null;
         }
-        File credFile = new File(credPath);
-        if (!credFile.exists()) {
-            log.warn("Firebase credentials file not found at '{}' - running in dev mode", credPath);
-            return;
-        }
-        try (FileInputStream fis = new FileInputStream(credFile)) {
-            FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(fis))
-                    .build();
-            if (FirebaseApp.getApps().isEmpty()) {
-                FirebaseApp.initializeApp(options);
-                log.info("Firebase initialized successfully");
+        try {
+            if (!FirebaseApp.getApps().isEmpty()) {
+                return FirebaseApp.getInstance();
             }
+            InputStream serviceAccount = new ByteArrayInputStream(
+                    serviceAccountJson.getBytes(StandardCharsets.UTF_8));
+            FirebaseOptions options = FirebaseOptions.builder()
+                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                    .build();
+            FirebaseApp app = FirebaseApp.initializeApp(options);
+            log.info("Firebase initialized successfully");
+            return app;
         } catch (IOException e) {
-            log.error("Failed to initialize Firebase — running in dev mode", e);
+            log.error("Failed to initialize Firebase: {}", e.getMessage());
+            return null;
         }
     }
 }

@@ -6,6 +6,7 @@ import com.localpro.user.User;
 import com.localpro.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -46,12 +48,24 @@ public class ReviewService {
                 .comment(req.comment())
                 .build();
         Review saved = reviewRepository.save(review);
+        log.info("User {} submitted review (rating={}) for listing {}", clientId, req.rating(), listingId);
 
-        double avg = reviewRepository.findAverageRatingByListingId(listingId).orElse(0.0);
-        long count = reviewRepository.countByListingId(listingId);
-        listing.setRating(BigDecimal.valueOf(avg).setScale(2, RoundingMode.HALF_UP));
-        listing.setReviewCount((int) count);
+        // Update listing aggregates
+        double listingAvg = reviewRepository.findAverageRatingByListingId(listingId).orElse(0.0);
+        long listingCount = reviewRepository.countByListingId(listingId);
+        listing.setRating(BigDecimal.valueOf(listingAvg).setScale(2, RoundingMode.HALF_UP));
+        listing.setReviewCount((int) listingCount);
         listingRepository.save(listing);
+
+        // Update provider aggregates
+        UUID providerId = listing.getProvider().getId();
+        double providerAvg = reviewRepository.findAverageRatingByProviderId(providerId).orElse(0.0);
+        long providerCount = reviewRepository.countByProviderId(providerId);
+        User provider = userRepository.findById(providerId)
+                .orElseThrow(() -> new EntityNotFoundException("Provider not found: " + providerId));
+        provider.setRating(BigDecimal.valueOf(providerAvg).setScale(2, RoundingMode.HALF_UP));
+        provider.setReviewCount((int) providerCount);
+        userRepository.save(provider);
 
         return saved;
     }

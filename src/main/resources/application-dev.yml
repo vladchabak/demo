@@ -2,7 +2,10 @@ spring:
   jpa:
     show-sql: true
   flyway:
-    enabled: false   # disabled in dev until DB is ready
+    enabled: true
+
+app:
+  dev-mode: true
 
 logging:
   level:
