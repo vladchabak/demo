@@ -13,8 +13,8 @@ public record CreateListingRequest(
         @NotNull UUID categoryId,
         BigDecimal price,
         PriceType priceType,
-        Double lat,
-        Double lng,
+        @NotNull Double lat,
+        @NotNull Double lng,
         String address,
         String city
 ) {}

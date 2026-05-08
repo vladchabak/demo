@@ -25,6 +25,6 @@ public class OpenApiConfig {
                                         .type(SecurityScheme.Type.HTTP)
                                         .scheme("bearer")
                                         .bearerFormat("JWT")
-                                        .description("Enter 'dev-token' for local development")));
+                                        .description("Firebase ID token (Bearer <token>)")));
     }
 }

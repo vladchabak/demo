@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,6 +33,9 @@ public class FirebaseTokenFilter extends OncePerRequestFilter {
     @Autowired(required = false)
     private FirebaseApp firebaseApp;
 
+    @Value("${app.dev-mode:false}")
+    private boolean devMode;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -43,8 +47,7 @@ public class FirebaseTokenFilter extends OncePerRequestFilter {
         }
 
         if (firebaseApp == null) {
-            // Dev mode: accept "Bearer dev-token" to authenticate as the first DB user
-            if ("dev-token".equals(header.substring(7))) {
+            if (devMode && "dev-token".equals(header.substring(7))) {
                 log.debug("Dev mode: authenticating with dev-token");
                 User devUser = userService.getOrCreateDevUser();
                 UsernamePasswordAuthenticationToken auth =
@@ -72,11 +75,11 @@ public class FirebaseTokenFilter extends OncePerRequestFilter {
 
             chain.doFilter(request, response);
         } catch (FirebaseAuthException e) {
-            log.debug("Firebase token verification failed: {}", e.getMessage());
+            log.warn("Firebase token verification failed: {}", e.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.getWriter().write(
-                    "{\"code\":\"INVALID_TOKEN\",\"message\":\"" + e.getMessage() + "\"}"
+                    "{\"code\":\"INVALID_TOKEN\",\"message\":\"Invalid or expired token\"}"
             );
         }
     }

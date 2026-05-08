@@ -19,6 +19,12 @@ spring:
     baseline-on-migrate: true
     baseline-version: 0
 
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false
+
 logging:
   level:
     com.localpro: INFO
