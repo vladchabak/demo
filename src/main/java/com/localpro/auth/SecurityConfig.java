@@ -29,7 +29,7 @@ public class SecurityConfig {
 
     private final FirebaseTokenFilter firebaseTokenFilter;
 
-    @Value("${ALLOWED_ORIGINS:http://localhost:3000}")
+    @Value("${ALLOWED_ORIGINS:http://localhost:*,https://vladchabak.github.io}")
     private String allowedOriginsRaw;
 
     @Bean
@@ -69,7 +69,7 @@ public class SecurityConfig {
         List<String> origins = Arrays.stream(allowedOriginsRaw.split(","))
                 .map(String::trim)
                 .collect(Collectors.toList());
-        config.setAllowedOrigins(origins);
+        config.setAllowedOriginPatterns(origins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
