@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
@@ -38,8 +37,8 @@ public class FirebaseConfig {
             FirebaseApp app = FirebaseApp.initializeApp(options);
             log.info("Firebase initialized successfully");
             return app;
-        } catch (IOException e) {
-            log.error("Failed to initialize Firebase: {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("Failed to initialize Firebase: {} - falling back to dev mode", e.getMessage());
             return null;
         }
     }
