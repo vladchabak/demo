@@ -1,6 +1,6 @@
 package com.localpro.listing;
 
-import com.localpro.listing.dto.CreateListingRequest;
+import com.localpro.listing.dto.ListingRequest;
 import com.localpro.listing.dto.ListingResponse;
 import com.localpro.listing.dto.NearbyListingResponse;
 import com.localpro.listing.dto.UpdateListingRequest;
@@ -19,6 +19,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,7 +36,7 @@ public class ListingService {
 
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
-    public ServiceListing create(User provider, CreateListingRequest req) {
+    public ServiceListing create(User provider, ListingRequest req) {
         Category category = categoryRepository.findById(req.categoryId())
                 .orElseThrow(() -> new EntityNotFoundException("Category not found: " + req.categoryId()));
 
@@ -44,13 +46,28 @@ public class ListingService {
                 .title(req.title())
                 .description(req.description())
                 .price(req.price())
-                .priceType(req.priceType() != null ? req.priceType() : PriceType.FROM)
+                .priceType(req.priceType() != null ? req.priceType() : PriceType.PER_SERVICE)
                 .address(req.address())
                 .city(req.city())
-                .location(buildPoint(req.lat(), req.lng()))
+                .location(buildPoint(req.latitude(), req.longitude()))
+                .customQuestions(req.customQuestions() != null ? req.customQuestions() : new ArrayList<>())
                 .build();
 
         ServiceListing saved = listingRepository.save(listing);
+
+        // Handle photo URLs
+        if (req.photoUrls() != null && !req.photoUrls().isEmpty()) {
+            for (int i = 0; i < req.photoUrls().size(); i++) {
+                ServicePhoto photo = ServicePhoto.builder()
+                        .listing(saved)
+                        .url(req.photoUrls().get(i))
+                        .sortOrder(i)
+                        .build();
+                saved.getPhotos().add(photo);
+            }
+            listingRepository.save(saved);
+        }
+
         log.info("Provider {} created listing {}", provider.getId(), saved.getId());
         return saved;
     }
@@ -84,11 +101,21 @@ public class ListingService {
         log.info("Provider {} deleted listing {}", providerId, listingId);
     }
 
+    public ServiceListing verify(UUID listingId) {
+        ServiceListing listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new EntityNotFoundException("Listing not found: " + listingId));
+        listing.setVerified(true);
+        listing.setVerifiedAt(LocalDateTime.now());
+        listing.setVisibleOnMap(true);
+        ServiceListing saved = listingRepository.save(listing);
+        log.info("Listing {} verified", listingId);
+        return saved;
+    }
+
     public ServiceListing getById(UUID id) {
-        ServiceListing listing = listingRepository.findByIdWithDetails(id)
+        listingRepository.incrementViewCount(id);
+        return listingRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new EntityNotFoundException("Listing not found: " + id));
-        listing.setViewCount(listing.getViewCount() + 1);
-        return listingRepository.save(listing);
     }
 
     @Transactional(readOnly = true)

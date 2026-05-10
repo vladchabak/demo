@@ -7,6 +7,7 @@ import org.locationtech.jts.geom.Point;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -42,7 +43,7 @@ public class ServiceListing {
     @Enumerated(EnumType.STRING)
     @Column(name = "price_type")
     @Builder.Default
-    private PriceType priceType = PriceType.FROM;
+    private PriceType priceType = PriceType.PER_SERVICE;
 
     @Column(columnDefinition = "geography(Point,4326)")
     private Point location;
@@ -76,4 +77,23 @@ public class ServiceListing {
 
     @Column(name = "updated_at", insertable = false, updatable = false)
     private Instant updatedAt;
+
+    @Column(name = "is_verified", nullable = false)
+    @Builder.Default
+    private boolean isVerified = false;
+
+    @Column(name = "verified_at")
+    private LocalDateTime verifiedAt;
+
+    @Column(name = "custom_questions", columnDefinition = "TEXT")
+    @Convert(converter = JsonListConverter.class)
+    @Builder.Default
+    private List<String> customQuestions = new ArrayList<>();
+
+    @Column(name = "is_visible_on_map", nullable = false)
+    @Builder.Default
+    private boolean isVisibleOnMap = false;
+
+    @Version
+    private Long version;
 }

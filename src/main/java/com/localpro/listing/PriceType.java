@@ -1,5 +1,5 @@
 package com.localpro.listing;
 
 public enum PriceType {
-    FIXED, HOURLY, FROM
+    PER_SERVICE, PER_HOUR, NEGOTIABLE
 }

@@ -26,7 +26,7 @@ public class ListingController {
 
     @PostMapping("/listings")
     public ResponseEntity<ListingResponse> create(@CurrentUser User user,
-                                                  @Valid @RequestBody CreateListingRequest request) {
+                                                  @Valid @RequestBody ListingRequest request) {
         ServiceListing listing = listingService.create(user, request);
         return ResponseEntity
                 .created(URI.create("/api/listings/" + listing.getId()))
@@ -71,6 +71,12 @@ public class ListingController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.ok(listingService.findNearby(lat, lng, radiusKm, categoryId, page, size));
+    }
+
+    @PostMapping("/listings/{id}/verify")
+    public ResponseEntity<ListingResponse> verify(@PathVariable UUID id) {
+        ServiceListing listing = listingService.verify(id);
+        return ResponseEntity.ok(listingMapper.toResponse(listing));
     }
 
     @GetMapping("/categories")

@@ -2,7 +2,7 @@ package com.localpro.listing;
 
 import com.localpro.AbstractIntegrationTest;
 import com.localpro.listing.dto.CategoryResponse;
-import com.localpro.listing.dto.CreateListingRequest;
+import com.localpro.listing.dto.ListingRequest;
 import com.localpro.listing.dto.ListingResponse;
 import com.localpro.listing.dto.UpdateListingRequest;
 import org.junit.jupiter.api.Test;
@@ -37,9 +37,9 @@ class ListingControllerTest extends AbstractIntegrationTest {
     void createListing_returnsCreated() {
         UUID categoryId = getFirstCategoryId();
 
-        CreateListingRequest request = new CreateListingRequest(
+        ListingRequest request = new ListingRequest(
                 "Test Cleaning Service", "Professional cleaning",
-                categoryId, BigDecimal.valueOf(50), PriceType.FROM, 50.45, 30.52, "Test St 1", "Kyiv");
+                categoryId, BigDecimal.valueOf(50), PriceType.PER_SERVICE, 50.45, 30.52, "Test St 1", "Kyiv", null, null);
 
         ResponseEntity<ListingResponse> response = restTemplate.exchange(
                 "/api/listings",
@@ -50,6 +50,8 @@ class ListingControllerTest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody().id()).isNotNull();
         assertThat(response.getBody().title()).isEqualTo("Test Cleaning Service");
+        assertThat(response.getBody().isVerified()).isFalse();
+        assertThat(response.getBody().isVisibleOnMap()).isFalse();
     }
 
     @Test
@@ -133,9 +135,9 @@ class ListingControllerTest extends AbstractIntegrationTest {
     @Test
     void createListing_withoutLocation_returns400() {
         UUID categoryId = getFirstCategoryId();
-        CreateListingRequest request = new CreateListingRequest(
+        ListingRequest request = new ListingRequest(
                 "No Location", "Desc", categoryId, BigDecimal.valueOf(30),
-                PriceType.FROM, null, null, "Street", "City");
+                PriceType.PER_SERVICE, null, null, "Street", "City", null, null);
 
         ResponseEntity<Map> response = restTemplate.exchange(
                 "/api/listings",
@@ -149,8 +151,8 @@ class ListingControllerTest extends AbstractIntegrationTest {
     @Test
     void createListing_withoutAuth_returns401() {
         UUID categoryId = getFirstCategoryId();
-        CreateListingRequest request = new CreateListingRequest(
-                "Unauthorized", null, categoryId, null, null, 50.0, 30.0, null, null);
+        ListingRequest request = new ListingRequest(
+                "Unauthorized", null, categoryId, null, null, 50.0, 30.0, null, null, null, null);
 
         ResponseEntity<Map> response = restTemplate.exchange(
                 "/api/listings",
@@ -161,11 +163,27 @@ class ListingControllerTest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
+    @Test
+    void verifyListing_setsVerifiedAndVisibleOnMap() {
+        UUID listingId = createListing("Listing to Verify");
+
+        ResponseEntity<ListingResponse> response = restTemplate.exchange(
+                "/api/listings/" + listingId + "/verify",
+                HttpMethod.POST,
+                new HttpEntity<>(authHeaders()),
+                ListingResponse.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody().isVerified()).isTrue();
+        assertThat(response.getBody().isVisibleOnMap()).isTrue();
+        assertThat(response.getBody().verifiedAt()).isNotNull();
+    }
+
     UUID createListing(String title) {
         UUID categoryId = getFirstCategoryId();
-        CreateListingRequest request = new CreateListingRequest(
+        ListingRequest request = new ListingRequest(
                 title, "Description", categoryId, BigDecimal.valueOf(50),
-                PriceType.FROM, 50.45, 30.52, "Street", "Kyiv");
+                PriceType.PER_SERVICE, 50.45, 30.52, "Street", "Kyiv", null, null);
         return restTemplate.exchange(
                 "/api/listings",
                 HttpMethod.POST,

@@ -3,6 +3,7 @@ package com.localpro.listing;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -30,6 +31,7 @@ public interface ServiceListingRepository extends JpaRepository<ServiceListing, 
             WHERE ST_DWithin(sl.location, ST_MakePoint(:lng, :lat)::geography, :radiusMeters)
             AND (:categoryId IS NULL OR sl.category_id = CAST(:categoryId AS uuid))
             AND sl.status = 'ACTIVE'
+            AND sl.is_visible_on_map = true
             ORDER BY ST_Distance(sl.location, ST_MakePoint(:lng, :lat)::geography)
             LIMIT :limit OFFSET :offset
             """, nativeQuery = true)
@@ -45,9 +47,14 @@ public interface ServiceListingRepository extends JpaRepository<ServiceListing, 
             WHERE ST_DWithin(sl.location, ST_MakePoint(:lng, :lat)::geography, :radiusMeters)
             AND (:categoryId IS NULL OR sl.category_id = CAST(:categoryId AS uuid))
             AND sl.status = 'ACTIVE'
+            AND sl.is_visible_on_map = true
             """, nativeQuery = true)
     long countNearby(@Param("lat") double lat,
                      @Param("lng") double lng,
                      @Param("radiusMeters") double radiusMeters,
                      @Param("categoryId") String categoryId);
+
+    @Modifying
+    @Query("UPDATE ServiceListing sl SET sl.viewCount = sl.viewCount + 1 WHERE sl.id = :id")
+    void incrementViewCount(@Param("id") UUID id);
 }

@@ -36,7 +36,11 @@
       "PowerShell(& \"C:\\\\Program Files\\\\Docker\\\\Docker\\\\resources\\\\bin\\\\docker.exe\" context ls 2>&1)",
       "PowerShell(& \"C:\\\\Program Files\\\\Docker\\\\Docker\\\\resources\\\\bin\\\\docker.exe\" --context desktop-linux ps 2>&1)",
       "PowerShell(& \"C:\\\\Program Files\\\\Docker\\\\Docker\\\\resources\\\\bin\\\\docker.exe\" --context default ps 2>&1 | Select-Object -First 3)",
-      "Bash(grep -v \"^\\\\[INFO\\\\]\\\\|WARNING:\\\\|^$\")"
+      "Bash(grep -v \"^\\\\[INFO\\\\]\\\\|WARNING:\\\\|^$\")",
+      "Bash(./mvnw clean *)",
+      "Bash(./mvnw test *)",
+      "Bash(awk '{print $2}')",
+      "Bash(mvn clean *)"
     ]
   }
 }

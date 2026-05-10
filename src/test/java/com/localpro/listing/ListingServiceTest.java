@@ -1,6 +1,6 @@
 package com.localpro.listing;
 
-import com.localpro.listing.dto.CreateListingRequest;
+import com.localpro.listing.dto.ListingRequest;
 import com.localpro.listing.dto.UpdateListingRequest;
 import com.localpro.user.User;
 import jakarta.persistence.EntityNotFoundException;
@@ -68,24 +68,24 @@ class ListingServiceTest {
         when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
         when(listingRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        CreateListingRequest req = new CreateListingRequest(
+        ListingRequest req = new ListingRequest(
                 "House Cleaning", "Deep clean", categoryId,
-                BigDecimal.valueOf(50), PriceType.FROM, 50.45, 30.52, "Main St", "Kyiv");
+                BigDecimal.valueOf(50), PriceType.PER_SERVICE, 50.45, 30.52, "Main St", "Kyiv", null, null);
 
         ServiceListing result = listingService.create(provider, req);
 
         assertThat(result.getTitle()).isEqualTo("House Cleaning");
         assertThat(result.getProvider()).isEqualTo(provider);
         assertThat(result.getLocation()).isNotNull();
-        verify(listingRepository).save(any());
+        verify(listingRepository, atLeastOnce()).save(any());
     }
 
     @Test
     void create_categoryNotFound_throwsEntityNotFoundException() {
         when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
 
-        CreateListingRequest req = new CreateListingRequest(
-                "Title", null, categoryId, null, null, 50.0, 30.0, null, null);
+        ListingRequest req = new ListingRequest(
+                "Title", null, categoryId, null, null, 50.0, 30.0, null, null, null, null);
 
         assertThatThrownBy(() -> listingService.create(provider, req))
                 .isInstanceOf(EntityNotFoundException.class);
