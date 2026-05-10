@@ -50,21 +50,31 @@ public class ReviewService {
         Review saved = reviewRepository.save(review);
         log.info("User {} submitted review (rating={}) for listing {}", clientId, req.rating(), listingId);
 
-        // Update listing aggregates
-        double listingAvg = reviewRepository.findAverageRatingByListingId(listingId).orElse(0.0);
-        long listingCount = reviewRepository.countByListingId(listingId);
-        listing.setRating(BigDecimal.valueOf(listingAvg).setScale(2, RoundingMode.HALF_UP));
-        listing.setReviewCount((int) listingCount);
+        // Update listing aggregates using incremental formula
+        int oldListingCount = listing.getReviewCount();
+        BigDecimal oldListingRating = listing.getRating() != null ? listing.getRating() : BigDecimal.ZERO;
+        BigDecimal newListingRating = oldListingCount == 0
+            ? BigDecimal.valueOf(req.rating())
+            : oldListingRating
+                .multiply(BigDecimal.valueOf(oldListingCount))
+                .add(BigDecimal.valueOf(req.rating()))
+                .divide(BigDecimal.valueOf(oldListingCount + 1), 2, RoundingMode.HALF_UP);
+        listing.setRating(newListingRating);
+        listing.setReviewCount(oldListingCount + 1);
         listingRepository.save(listing);
 
-        // Update provider aggregates
-        UUID providerId = listing.getProvider().getId();
-        double providerAvg = reviewRepository.findAverageRatingByProviderId(providerId).orElse(0.0);
-        long providerCount = reviewRepository.countByProviderId(providerId);
-        User provider = userRepository.findById(providerId)
-                .orElseThrow(() -> new EntityNotFoundException("Provider not found: " + providerId));
-        provider.setRating(BigDecimal.valueOf(providerAvg).setScale(2, RoundingMode.HALF_UP));
-        provider.setReviewCount((int) providerCount);
+        // Update provider aggregates using same incremental formula
+        User provider = listing.getProvider();
+        int oldProviderCount = provider.getReviewCount();
+        BigDecimal oldProviderRating = provider.getRating() != null ? provider.getRating() : BigDecimal.ZERO;
+        BigDecimal newProviderRating = oldProviderCount == 0
+            ? BigDecimal.valueOf(req.rating())
+            : oldProviderRating
+                .multiply(BigDecimal.valueOf(oldProviderCount))
+                .add(BigDecimal.valueOf(req.rating()))
+                .divide(BigDecimal.valueOf(oldProviderCount + 1), 2, RoundingMode.HALF_UP);
+        provider.setRating(newProviderRating);
+        provider.setReviewCount(oldProviderCount + 1);
         userRepository.save(provider);
 
         return saved;

@@ -2,7 +2,7 @@ package com.localpro.listing;
 
 import com.localpro.AbstractIntegrationTest;
 import com.localpro.listing.dto.CategoryResponse;
-import com.localpro.listing.dto.CreateListingRequest;
+import com.localpro.listing.dto.ListingRequest;
 import com.localpro.listing.dto.CreateReviewRequest;
 import com.localpro.listing.dto.ListingResponse;
 import org.junit.jupiter.api.Test;
@@ -116,9 +116,9 @@ class ReviewControllerTest extends AbstractIntegrationTest {
                 new HttpEntity<>(authHeaders()), new ParameterizedTypeReference<>() {});
         UUID categoryId = categories.getBody().get(0).id();
 
-        CreateListingRequest request = new CreateListingRequest(
+        ListingRequest request = new ListingRequest(
                 "Review Test Listing", "For review tests",
-                categoryId, BigDecimal.valueOf(40), PriceType.FROM, 50.45, 30.52, "Street", "Kyiv");
+                categoryId, BigDecimal.valueOf(40), PriceType.PER_SERVICE, 50.45, 30.52, "Street", "Kyiv", null, null);
 
         return restTemplate.exchange(
                 "/api/listings", HttpMethod.POST,

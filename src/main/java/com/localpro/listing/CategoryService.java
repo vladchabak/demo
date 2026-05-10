@@ -2,6 +2,8 @@ package com.localpro.listing;
 
 import com.localpro.listing.dto.CategoryResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,7 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
 
+    @Cacheable(value = "categories", unless = "#result.isEmpty()")
     @Transactional(readOnly = true)
     public List<CategoryResponse> getTopLevelCategories() {
         List<Category> all = categoryRepository.findAll(Sort.by("sortOrder"));
