@@ -28,18 +28,29 @@ public class ReviewService {
     private final ReviewMapper reviewMapper;
 
     public Review create(UUID clientId, UUID listingId, CreateReviewRequest req) {
+        log.info("=== [ReviewService.create] called by user: {} for listing: {}, rating: {}",
+                clientId, listingId, req.rating());
+
         ServiceListing listing = listingRepository.findById(listingId)
-                .orElseThrow(() -> new EntityNotFoundException("Listing not found: " + listingId));
+                .orElseThrow(() -> {
+                    log.warn("Listing not found for review: {}", listingId);
+                    return new EntityNotFoundException("Listing not found: " + listingId);
+                });
 
         if (listing.getProvider().getId().equals(clientId)) {
+            log.warn("User {} attempted to review own listing {}", clientId, listingId);
             throw new IllegalArgumentException("Cannot review own listing");
         }
         if (reviewRepository.existsByListingIdAndClientId(listingId, clientId)) {
+            log.warn("User {} already reviewed listing {}", clientId, listingId);
             throw new IllegalArgumentException("Already reviewed this listing");
         }
 
         User client = userRepository.findById(clientId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found: " + clientId));
+                .orElseThrow(() -> {
+                    log.warn("User not found for review: {}", clientId);
+                    return new EntityNotFoundException("User not found: " + clientId);
+                });
 
         Review review = Review.builder()
                 .listing(listing)
@@ -82,7 +93,11 @@ public class ReviewService {
 
     @Transactional(readOnly = true)
     public Page<ReviewResponse> getByListing(UUID listingId, Pageable pageable) {
-        return reviewRepository.findByListingIdOrderByCreatedAtDesc(listingId, pageable)
+        log.info("=== [ReviewService.getByListing] called for listing: {}, page: {}",
+                listingId, pageable.getPageNumber());
+        Page<ReviewResponse> reviews = reviewRepository.findByListingIdOrderByCreatedAtDesc(listingId, pageable)
                 .map(reviewMapper::toResponse);
+        log.info("Found {} reviews for listing {}", reviews.getNumberOfElements(), listingId);
+        return reviews;
     }
 }

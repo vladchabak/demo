@@ -39,9 +39,15 @@ public class ChatService {
     private final SimpMessageSendingOperations messagingTemplate;
 
     public ChatSummaryResponse getOrCreateChat(UUID clientId, UUID providerId, UUID listingId) {
+        log.info("=== [ChatService.getOrCreateChat] called by client: {} with provider: {}, listing: {}",
+                clientId, providerId, listingId);
+
         Chat chat = chatRepository
                 .findByClientIdAndProviderIdAndListingId(clientId, providerId, listingId)
-                .map(existing -> chatRepository.findByIdWithDetails(existing.getId()).orElse(existing))
+                .map(existing -> {
+                    log.info("Found existing chat: {}", existing.getId());
+                    return chatRepository.findByIdWithDetails(existing.getId()).orElse(existing);
+                })
                 .orElseGet(() -> {
                     User client = loadUser(clientId);
                     User provider = loadUser(providerId);
@@ -52,13 +58,15 @@ public class ChatService {
 
                     if (listingId != null) {
                         ServiceListing listing = listingRepository.findById(listingId)
-                                .orElseThrow(() -> new EntityNotFoundException(
-                                        "Listing not found: " + listingId));
+                                .orElseThrow(() -> {
+                                    log.warn("Listing not found for chat: {}", listingId);
+                                    return new EntityNotFoundException("Listing not found: " + listingId);
+                                });
                         builder.listing(listing);
                     }
 
                     Chat saved = chatRepository.save(builder.build());
-                    log.info("User {} started chat {} with provider {}", clientId, saved.getId(), providerId);
+                    log.info("Created new chat {} between client {} and provider {}", saved.getId(), clientId, providerId);
                     return chatRepository.findByIdWithDetails(saved.getId()).orElse(saved);
                 });
         return buildSummary(chat, clientId);
@@ -85,19 +93,29 @@ public class ChatService {
 
     @Transactional(readOnly = true)
     public List<ChatSummaryResponse> getChats(UUID userId) {
-        return chatRepository
+        log.info("=== [ChatService.getChats] called for user: {}", userId);
+        List<ChatSummaryResponse> chats = chatRepository
                 .findAllByUserIdWithDetails(userId)
                 .stream()
                 .map(chat -> buildSummary(chat, userId))
                 .toList();
+        log.info("Found {} chats for user {}", chats.size(), userId);
+        return chats;
     }
 
     public MessageResponse sendMessage(UUID chatId, UUID senderId, String content) {
+        log.info("=== [ChatService.sendMessage] called for chat: {} by sender: {}",
+                chatId, senderId);
+
         Chat chat = chatRepository.findById(chatId)
-                .orElseThrow(() -> new EntityNotFoundException("Chat not found: " + chatId));
+                .orElseThrow(() -> {
+                    log.warn("Chat not found: {}", chatId);
+                    return new EntityNotFoundException("Chat not found: " + chatId);
+                });
 
         if (!chat.getClient().getId().equals(senderId)
                 && !chat.getProvider().getId().equals(senderId)) {
+            log.warn("User {} is not a participant in chat {}", senderId, chatId);
             throw new AccessDeniedException("User is not a participant in this chat");
         }
 
@@ -130,22 +148,32 @@ public class ChatService {
 
     @Transactional
     public Page<MessageResponse> getMessages(UUID chatId, UUID userId, Pageable pageable) {
+        log.info("=== [ChatService.getMessages] called for chat: {} by user: {}, page: {}",
+                chatId, userId, pageable.getPageNumber());
+
         Chat chat = chatRepository.findById(chatId)
-                .orElseThrow(() -> new EntityNotFoundException("Chat not found: " + chatId));
+                .orElseThrow(() -> {
+                    log.warn("Chat not found: {}", chatId);
+                    return new EntityNotFoundException("Chat not found: " + chatId);
+                });
 
         if (!chat.getClient().getId().equals(userId)
                 && !chat.getProvider().getId().equals(userId)) {
+            log.warn("User {} is not a participant in chat {}", userId, chatId);
             throw new AccessDeniedException("User is not a participant in this chat");
         }
 
         messageRepository.markAllAsRead(chatId, userId);
-
-        return messageRepository.findByChatIdOrderByCreatedAtDesc(chatId, pageable)
+        Page<MessageResponse> messages = messageRepository.findByChatIdOrderByCreatedAtDesc(chatId, pageable)
                 .map(messageMapper::toResponse);
+        log.info("Retrieved {} messages from chat {}", messages.getNumberOfElements(), chatId);
+        return messages;
     }
 
     public void markRead(UUID chatId, UUID userId) {
+        log.info("=== [ChatService.markRead] called for chat: {} by user: {}", chatId, userId);
         messageRepository.markAllAsRead(chatId, userId);
+        log.info("Marked messages as read for user {} in chat {}", userId, chatId);
     }
 
     private User loadUser(UUID userId) {
