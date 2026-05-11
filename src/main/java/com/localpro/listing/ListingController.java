@@ -11,6 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -71,6 +72,48 @@ public class ListingController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.ok(listingService.findNearby(lat, lng, radiusKm, categoryId, page, size));
+    }
+
+    @GetMapping("/listings/search")
+    public ResponseEntity<Page<ListingResponse>> search(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) UUID categoryId,
+            @RequestParam(required = false) PriceType priceType,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) String city,
+            @RequestParam(defaultValue = "newest") String sortBy,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        PageRequest pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(listingService.search(query, categoryId, priceType, minPrice, maxPrice, city, sortBy, pageable)
+                .map(listingMapper::toResponse));
+    }
+
+    @GetMapping("/listings/popular")
+    public ResponseEntity<List<ListingResponse>> getPopular() {
+        return ResponseEntity.ok(listingService.getPopular()
+                .stream()
+                .map(listingMapper::toResponse)
+                .toList());
+    }
+
+    @GetMapping("/listings/recent")
+    public ResponseEntity<List<ListingResponse>> getRecent() {
+        return ResponseEntity.ok(listingService.getRecent()
+                .stream()
+                .map(listingMapper::toResponse)
+                .toList());
+    }
+
+    @GetMapping("/listings/category/{categoryId}")
+    public ResponseEntity<Page<ListingResponse>> getByCategory(
+            @PathVariable UUID categoryId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        return ResponseEntity.ok(listingService.getByCategory(categoryId, pageable)
+                .map(listingMapper::toResponse));
     }
 
     @PostMapping("/listings/{id}/verify")

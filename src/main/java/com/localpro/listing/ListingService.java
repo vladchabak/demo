@@ -200,4 +200,33 @@ public class ListingService {
         if (meters < 1000) return Math.round(meters) + " m";
         return String.format("%.1f km", meters / 1000);
     }
+
+    @Transactional(readOnly = true)
+    public Page<ServiceListing> search(String query, UUID categoryId, PriceType priceType,
+                                       java.math.BigDecimal minPrice, java.math.BigDecimal maxPrice,
+                                       String city, String sortBy, Pageable pageable) {
+        log.info("=== [ListingService.search] query: {}, category: {}, sortBy: {}, page: {}",
+                query, categoryId, sortBy, pageable.getPageNumber());
+
+        String effectiveSortBy = (sortBy == null || sortBy.isBlank()) ? "newest" : sortBy;
+        return listingRepository.search(query, categoryId, priceType, minPrice, maxPrice, city, effectiveSortBy, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ServiceListing> getPopular() {
+        log.info("=== [ListingService.getPopular] fetching top 10 listings by viewCount");
+        return listingRepository.findTop10ByStatusAndIsVisibleOnMapTrueOrderByViewCountDesc(ListingStatus.ACTIVE);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ServiceListing> getRecent() {
+        log.info("=== [ListingService.getRecent] fetching top 10 recent verified listings");
+        return listingRepository.findTop10ByStatusAndIsVerifiedTrueAndIsVisibleOnMapTrueOrderByCreatedAtDesc(ListingStatus.ACTIVE);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ServiceListing> getByCategory(UUID categoryId, Pageable pageable) {
+        log.info("=== [ListingService.getByCategory] category: {}, page: {}", categoryId, pageable.getPageNumber());
+        return listingRepository.findByCategory_IdAndStatusAndIsVisibleOnMapTrue(categoryId, ListingStatus.ACTIVE, pageable);
+    }
 }
