@@ -29,10 +29,20 @@ public class BookingService {
     private final MockCalendarService calendarService;
 
     public BookingResponse create(User customer, CreateBookingRequest req) {
+        log.info("Creating booking for listing {} by customer {}, paymentType: {}, scheduledAt: {}",
+                req.listingId(), customer.getId(), req.paymentType(), req.scheduledAt());
+
         ServiceListing listing = listingRepository.findByIdWithDetails(req.listingId())
                 .orElseThrow(() -> new EntityNotFoundException("Listing not found: " + req.listingId()));
 
+        if (listing == null) {
+            throw new EntityNotFoundException("Listing is null for id: " + req.listingId());
+        }
+
         User provider = listing.getProvider();
+        if (provider == null) {
+            throw new IllegalArgumentException("Listing provider is null for listing: " + req.listingId());
+        }
 
         if (customer.getId().equals(provider.getId())) {
             throw new IllegalArgumentException("Cannot book your own listing");

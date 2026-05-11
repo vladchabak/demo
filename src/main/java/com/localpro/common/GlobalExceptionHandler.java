@@ -3,6 +3,7 @@ package com.localpro.common;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -36,6 +37,15 @@ public class GlobalExceptionHandler {
                 .toList();
         return ResponseEntity.status(400).body(
                 new ErrorResponse("VALIDATION_ERROR", "Validation failed", errors)
+        );
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleBadJson(HttpMessageNotReadableException ex) {
+        log.error("Invalid JSON or enum conversion error", ex);
+        String message = ex.getCause() != null ? ex.getCause().getMessage() : "Invalid request format";
+        return ResponseEntity.status(400).body(
+                new ErrorResponse("INVALID_REQUEST", "Request body is invalid: " + message)
         );
     }
 
