@@ -37,6 +37,9 @@ public class ListingService {
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
     public ServiceListing create(User provider, ListingRequest req) {
+        log.info("=== [ListingService.create] called by provider: {}, title: {}, category: {}",
+                provider.getId(), req.title(), req.categoryId());
+
         Category category = categoryRepository.findById(req.categoryId())
                 .orElseThrow(() -> new EntityNotFoundException("Category not found: " + req.categoryId()));
 
@@ -68,11 +71,15 @@ public class ListingService {
             listingRepository.save(saved);
         }
 
-        log.info("Provider {} created listing {}", provider.getId(), saved.getId());
+        log.info("Provider {} created listing {} with {} photos", provider.getId(), saved.getId(),
+                req.photoUrls() != null ? req.photoUrls().size() : 0);
         return saved;
     }
 
     public ServiceListing update(UUID providerId, UUID listingId, UpdateListingRequest req) {
+        log.info("=== [ListingService.update] called for listing: {} by provider: {}",
+                listingId, providerId);
+
         ServiceListing listing = listingRepository.findByIdAndProviderId(listingId, providerId)
                 .orElseThrow(() -> new EntityNotFoundException("Listing not found: " + listingId));
 
@@ -90,7 +97,9 @@ public class ListingService {
         Point point = buildPoint(req.lat(), req.lng());
         if (point != null) listing.setLocation(point);
 
-        return listingRepository.save(listing);
+        ServiceListing updated = listingRepository.save(listing);
+        log.info("Listing {} updated successfully", listingId);
+        return updated;
     }
 
     public void delete(UUID providerId, UUID listingId) {
@@ -102,35 +111,49 @@ public class ListingService {
     }
 
     public ServiceListing verify(UUID listingId) {
+        log.info("=== [ListingService.verify] called for listing: {}", listingId);
         ServiceListing listing = listingRepository.findById(listingId)
-                .orElseThrow(() -> new EntityNotFoundException("Listing not found: " + listingId));
+                .orElseThrow(() -> {
+                    log.warn("Listing not found for verification: {}", listingId);
+                    return new EntityNotFoundException("Listing not found: " + listingId);
+                });
         listing.setVerified(true);
         listing.setVerifiedAt(LocalDateTime.now());
         listing.setVisibleOnMap(true);
         ServiceListing saved = listingRepository.save(listing);
-        log.info("Listing {} verified", listingId);
+        log.info("Listing {} verified successfully", listingId);
         return saved;
     }
 
     public ServiceListing getById(UUID id) {
         listingRepository.incrementViewCount(id);
         return listingRepository.findByIdWithDetails(id)
-                .orElseThrow(() -> new EntityNotFoundException("Listing not found: " + id));
+                .orElseThrow(() -> {
+                    log.warn("Listing not found: {}", id);
+                    return new EntityNotFoundException("Listing not found: " + id);
+                });
     }
 
     @Transactional(readOnly = true)
     public Page<ServiceListing> getByProvider(UUID providerId, Pageable pageable) {
+        log.info("=== [ListingService.getByProvider] called for provider: {} page: {}",
+                providerId, pageable.getPageNumber());
         return listingRepository.findByProviderIdAndStatusNot(providerId, ListingStatus.DELETED, pageable);
     }
 
     @Transactional(readOnly = true)
     public Page<NearbyListingResponse> findNearby(double lat, double lng, double radiusKm,
                                                    String categoryId, int page, int size) {
+        log.info("=== [ListingService.findNearby] called with lat: {}, lng: {}, radius: {}km, category: {}, page: {}",
+                lat, lng, radiusKm, categoryId, page);
+
         double radiusMeters = radiusKm * 1000;
         int offset = page * size;
 
         List<ServiceListing> listings = listingRepository.findNearby(lat, lng, radiusMeters, categoryId, size, offset);
         long total = listingRepository.countNearby(lat, lng, radiusMeters, categoryId);
+
+        log.info("Found {} nearby listings (total: {} in radius)", listings.size(), total);
 
         List<NearbyListingResponse> results = listings.stream()
                 .map(listing -> toNearbyResponse(listing, lat, lng))

@@ -80,52 +80,70 @@ public class BookingService {
 
     @Transactional(readOnly = true)
     public List<BookingResponse> getMyBookings(User user) {
-        return bookingRepository.findAllByUserIdWithDetails(user.getId())
+        log.info("=== [BookingService.getMyBookings] called for user: {}", user.getId());
+        List<BookingResponse> bookings = bookingRepository.findAllByUserIdWithDetails(user.getId())
                 .stream()
                 .map(this::toResponse)
                 .toList();
+        log.info("Found {} bookings for user {}", bookings.size(), user.getId());
+        return bookings;
     }
 
     public BookingResponse cancel(UUID bookingId, User user) {
+        log.info("=== [BookingService.cancel] called for booking: {} by user: {}", bookingId, user.getId());
+
         Booking booking = bookingRepository.findByIdWithDetails(bookingId)
-                .orElseThrow(() -> new EntityNotFoundException("Booking not found: " + bookingId));
+                .orElseThrow(() -> {
+                    log.warn("Booking not found for cancellation: {}", bookingId);
+                    return new EntityNotFoundException("Booking not found: " + bookingId);
+                });
 
         boolean isCustomer = booking.getCustomer().getId().equals(user.getId());
         boolean isProvider = booking.getProvider().getId().equals(user.getId());
 
         if (!isCustomer && !isProvider) {
+            log.warn("Unauthorized cancel attempt on booking {} by user {}", bookingId, user.getId());
             throw new AccessDeniedException("Not authorized to cancel this booking");
         }
 
         if (booking.getStatus() == BookingStatus.CANCELLED || booking.getStatus() == BookingStatus.COMPLETED) {
+            log.warn("Cannot cancel booking {} with status: {}", bookingId, booking.getStatus());
             throw new IllegalArgumentException("Cannot cancel a " + booking.getStatus().name().toLowerCase() + " booking");
         }
 
         booking.setStatus(BookingStatus.CANCELLED);
         if (booking.getPaymentStatus() == PaymentStatus.PAID) {
             booking.setPaymentStatus(PaymentStatus.REFUNDED);
+            log.info("Refund issued for booking {}", bookingId);
         }
 
         Booking saved = bookingRepository.save(booking);
-        log.info("User {} cancelled booking {}", user.getId(), bookingId);
+        log.info("Booking {} cancelled by user {}", bookingId, user.getId());
         return toResponse(saved);
     }
 
     public BookingResponse confirm(UUID bookingId, User user) {
+        log.info("=== [BookingService.confirm] called for booking: {} by provider: {}", bookingId, user.getId());
+
         Booking booking = bookingRepository.findByIdWithDetails(bookingId)
-                .orElseThrow(() -> new EntityNotFoundException("Booking not found: " + bookingId));
+                .orElseThrow(() -> {
+                    log.warn("Booking not found for confirmation: {}", bookingId);
+                    return new EntityNotFoundException("Booking not found: " + bookingId);
+                });
 
         if (!booking.getProvider().getId().equals(user.getId())) {
+            log.warn("Non-provider {} attempted to confirm booking {}", user.getId(), bookingId);
             throw new AccessDeniedException("Only the provider can confirm this booking");
         }
 
         if (booking.getStatus() != BookingStatus.PENDING) {
+            log.warn("Cannot confirm booking {} with status: {}", bookingId, booking.getStatus());
             throw new IllegalArgumentException("Only PENDING bookings can be confirmed");
         }
 
         booking.setStatus(BookingStatus.CONFIRMED);
         Booking saved = bookingRepository.save(booking);
-        log.info("Provider {} confirmed booking {}", user.getId(), bookingId);
+        log.info("Booking {} confirmed by provider {}", bookingId, user.getId());
         return toResponse(saved);
     }
 
