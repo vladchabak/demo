@@ -82,7 +82,7 @@ public class ListingController {
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) String city,
-            @RequestParam(defaultValue = "newest") String sortBy,
+            @RequestParam(defaultValue = "NEWEST") SortBy sortBy,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         PageRequest pageable = PageRequest.of(page, size);

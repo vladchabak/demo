@@ -4,13 +4,14 @@ import com.localpro.chat.dto.ChatSummaryResponse;
 import com.localpro.chat.dto.MessageResponse;
 import com.localpro.listing.ServiceListing;
 import com.localpro.listing.ServiceListingRepository;
+import com.localpro.notification.NotificationService;
 import com.localpro.user.User;
 import com.localpro.user.UserRepository;
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
@@ -28,15 +29,15 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ChatService {
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
     private final ChatRepository chatRepository;
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
     private final ServiceListingRepository listingRepository;
     private final MessageMapper messageMapper;
     private final SimpMessageSendingOperations messagingTemplate;
+
+    @Autowired(required = false)
+    private NotificationService notificationService;
 
     public ChatSummaryResponse getOrCreateChat(UUID clientId, UUID providerId, UUID listingId) {
         log.info("=== [ChatService.getOrCreateChat] called by client: {} with provider: {}, listing: {}",
@@ -65,9 +66,18 @@ public class ChatService {
                         builder.listing(listing);
                     }
 
-                    Chat saved = chatRepository.save(builder.build());
-                    log.info("Created new chat {} between client {} and provider {}", saved.getId(), clientId, providerId);
-                    return chatRepository.findByIdWithDetails(saved.getId()).orElse(saved);
+                    Chat newChat;
+                    try {
+                        newChat = chatRepository.save(builder.build());
+                        log.info("Created new chat {} between client {} and provider {}", newChat.getId(), clientId, providerId);
+                    } catch (DataIntegrityViolationException e) {
+                        // Another concurrent request created the same chat — find and return it
+                        log.info("Concurrent chat creation detected for client {} provider {} — returning existing", clientId, providerId);
+                        newChat = chatRepository
+                                .findByClientIdAndProviderIdAndListingId(clientId, providerId, listingId)
+                                .orElseThrow(() -> new IllegalStateException("Chat disappeared after race", e));
+                    }
+                    return chatRepository.findByIdWithDetails(newChat.getId()).orElse(newChat);
                 });
         return buildSummary(chat, clientId);
     }
@@ -124,10 +134,9 @@ public class ChatService {
                 .sender(loadUser(senderId))
                 .content(content)
                 .build();
+        // @Generated on createdAt causes Hibernate to re-select after INSERT automatically
         Message saved = messageRepository.save(message);
         log.info("User {} sent message to chat {}", senderId, chatId);
-        entityManager.flush();   // send INSERT to DB so the row exists
-        entityManager.refresh(saved); // read back DB-generated createdAt
 
         chat.setLastMessage(content);
         chat.setLastMessageAt(Instant.now());
@@ -138,10 +147,16 @@ public class ChatService {
                 : chat.getClient().getId();
 
         MessageResponse response = messageMapper.toResponse(saved);
-        messagingTemplate.convertAndSendToUser(
-                recipientId.toString(),
-                "/queue/messages",
-                response);
+        messagingTemplate.convertAndSendToUser(recipientId.toString(), "/queue/messages", response);
+
+        // Push notification for offline recipients — only when Firebase is configured
+        if (notificationService != null) {
+            User recipient = loadUser(recipientId);
+            if (recipient.getFcmToken() != null && !recipient.getFcmToken().isBlank()) {
+                notificationService.sendMessageNotification(
+                        recipient.getFcmToken(), chatId, saved.getSender().getName());
+            }
+        }
 
         return response;
     }

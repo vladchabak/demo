@@ -5,8 +5,11 @@ spring:
     password: ${PGPASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 3
-      connection-timeout: 30000
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+      keepalive-time: 30000
+      leak-detection-threshold: 60000
   jpa:
     hibernate:
       ddl-auto: validate
@@ -28,8 +31,8 @@ springdoc:
 logging:
   level:
     com.localpro: INFO
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
     org.springframework.web: WARN
     org.springframework.security: WARN
   pattern:

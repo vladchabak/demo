@@ -7,7 +7,6 @@ import com.localpro.booking.PaymentType;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record BookingResponse(
@@ -19,7 +18,7 @@ public record BookingResponse(
         UUID providerId,
         String providerName,
         BookingStatus status,
-        LocalDateTime scheduledAt,
+        Instant scheduledAt,
         PaymentType paymentType,
         PaymentStatus paymentStatus,
         BigDecimal totalPrice,

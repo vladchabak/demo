@@ -15,6 +15,7 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
 
     boolean existsByListingIdAndClientId(UUID listingId, UUID clientId);
 
+    // Used by RatingReconciliationJob (not yet implemented) — kept for future reconciliation safety net
     @Query("SELECT AVG(r.rating) FROM Review r WHERE r.listing.id = :listingId")
     Optional<Double> findAverageRatingByListingId(@Param("listingId") UUID listingId);
 

@@ -5,7 +5,6 @@ import com.localpro.chat.dto.MessageResponse;
 import com.localpro.listing.ServiceListingRepository;
 import com.localpro.user.User;
 import com.localpro.user.UserRepository;
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +17,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -39,7 +37,6 @@ class ChatServiceTest {
     @Mock ServiceListingRepository listingRepository;
     @Mock MessageMapper messageMapper;
     @Mock SimpMessageSendingOperations messagingTemplate;
-    @Mock EntityManager entityManager;
     @InjectMocks ChatService chatService;
 
     UUID clientId = UUID.randomUUID();
@@ -56,8 +53,6 @@ class ChatServiceTest {
         client = User.builder().id(clientId).firebaseUid("c").email("c@test.com").name("Client").build();
         provider = User.builder().id(providerId).firebaseUid("p").email("p@test.com").name("Provider").build();
         chat = Chat.builder().id(chatId).client(client).provider(provider).build();
-        // @PersistenceContext fields are not injected by @InjectMocks constructor injection
-        ReflectionTestUtils.setField(chatService, "entityManager", entityManager);
     }
 
     @Test

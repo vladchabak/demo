@@ -42,7 +42,13 @@
       "Bash(awk '{print $2}')",
       "Bash(mvn clean *)",
       "Bash(cd /d C:\\\\Users\\\\vladc\\\\IdeaProjects\\\\demo)",
-      "Bash(.\\\\mvnw.cmd clean *)"
+      "Bash(.\\\\mvnw.cmd clean *)",
+      "Bash(Get-ChildItem -Recurse -Path \"src\\\\main\\\\java\" -Include \"*.java\")",
+      "Bash(grep -E \"\\\\.\\(yml|yaml|sql|properties\\)$\")",
+      "Bash(xargs cat -n)",
+      "Bash(xargs grep -n \"incrementsViewCount\\\\|savesReviewAndUpdatesAggregates\\\\|providerRatingUpdated\\\\|findAverageRating\\\\|countByListing\")",
+      "Bash(xargs grep -l \"@Entity\")",
+      "Bash(xargs grep -l \"@Query\\\\|@Modifying\")"
     ]
   }
 }
