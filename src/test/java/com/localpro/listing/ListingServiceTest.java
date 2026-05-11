@@ -140,15 +140,14 @@ class ListingServiceTest {
     }
 
     @Test
-    void getById_existingListing_incrementsViewCountAndSaves() {
+    void getById_existingListing_incrementsViewCountAndReturnsListing() {
         listing.setViewCount(5);
         when(listingRepository.findByIdWithDetails(listingId)).thenReturn(Optional.of(listing));
-        when(listingRepository.save(listing)).thenReturn(listing);
 
         ServiceListing result = listingService.getById(listingId);
 
-        assertThat(result.getViewCount()).isEqualTo(6);
-        verify(listingRepository).save(listing);
+        assertThat(result).isSameAs(listing);
+        verify(listingRepository).incrementViewCount(listingId);
     }
 
     @Test

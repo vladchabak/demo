@@ -4,6 +4,7 @@ import com.localpro.user.dto.UpdateProfileRequest;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,14 +25,17 @@ public class UserService {
         log.info("=== [UserService.findOrCreateByFirebaseToken] called with uid: {}, email: {}", uid, email);
         return userRepository.findByFirebaseUid(uid).orElseGet(() -> {
             log.info("Creating new user with firebaseUid: {} and email: {}", uid, email);
-            User user = User.builder()
-                    .firebaseUid(uid)
-                    .email(email)
-                    .name(name)
-                    .build();
-            User savedUser = userRepository.save(user);
-            log.info("User {} created successfully", savedUser.getId());
-            return savedUser;
+            try {
+                User savedUser = userRepository.save(User.builder()
+                        .firebaseUid(uid).email(email).name(name).build());
+                log.info("User {} created successfully", savedUser.getId());
+                return savedUser;
+            } catch (DataIntegrityViolationException e) {
+                // Another concurrent request registered the same Firebase UID — return theirs
+                log.info("Concurrent registration detected for uid: {} — returning existing user", uid);
+                return userRepository.findByFirebaseUid(uid)
+                        .orElseThrow(() -> new IllegalStateException("User disappeared after race for uid: " + uid, e));
+            }
         });
     }
 

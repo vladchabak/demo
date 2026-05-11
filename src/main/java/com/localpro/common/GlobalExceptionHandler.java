@@ -104,11 +104,13 @@ public class GlobalExceptionHandler {
             OptimisticLockingFailureException ex, HttpServletRequest request) {
         log.warn("=== OPTIMISTIC LOCK CONFLICT [{}] {} => {}",
             request.getMethod(), request.getRequestURI(), ex.getMessage());
-        return ResponseEntity.status(409).body(Map.of(
-            "code", "CONFLICT",
-            "message", "Resource was modified by another request, please retry",
-            "path", request.getRequestURI()
-        ));
+        return ResponseEntity.status(409)
+            .header("Retry-After", "1")
+            .body(Map.of(
+                "code", "CONFLICT",
+                "message", "Resource was modified by another request, please retry",
+                "path", request.getRequestURI()
+            ));
     }
 
     @ExceptionHandler(ConstraintViolationException.class)

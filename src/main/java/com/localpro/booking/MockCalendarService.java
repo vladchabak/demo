@@ -1,22 +1,24 @@
 package com.localpro.booking;
 
 import com.localpro.booking.dto.CalendarLinks;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 @Service
-public class MockCalendarService {
+@Profile("!prod")
+public class MockCalendarService implements CalendarService {
 
-    private static final DateTimeFormatter GCAL_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss");
+    private static final DateTimeFormatter GCAL_FORMAT =
+            DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss").withZone(ZoneOffset.UTC);
 
-    public CalendarLinks generateLinks(UUID listingId, LocalDateTime scheduledAt) {
-        return generateLinks(CalendarType.IN_APP, listingId, scheduledAt);
-    }
-
-    public CalendarLinks generateLinks(CalendarType type, UUID listingId, LocalDateTime scheduledAt) {
+    @Override
+    public CalendarLinks generateLinks(CalendarType type, UUID listingId, Instant scheduledAt) {
         return switch (type) {
             case IN_APP -> new CalendarLinks(null, null);
             case CALENDLY -> new CalendarLinks(
@@ -26,9 +28,9 @@ public class MockCalendarService {
         };
     }
 
-    private String buildGoogleCalendarUrl(UUID listingId, LocalDateTime scheduledAt) {
-        String start = scheduledAt.format(GCAL_FORMAT);
-        String end = scheduledAt.plusHours(1).format(GCAL_FORMAT);
+    private String buildGoogleCalendarUrl(UUID listingId, Instant scheduledAt) {
+        String start = GCAL_FORMAT.format(scheduledAt);
+        String end = GCAL_FORMAT.format(scheduledAt.plus(Duration.ofHours(1)));
         return "https://calendar.google.com/calendar/render?action=TEMPLATE" +
                 "&text=LocalPro+Booking" +
                 "&dates=" + start + "/" + end +

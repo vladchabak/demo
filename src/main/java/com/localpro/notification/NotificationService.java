@@ -4,8 +4,8 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -13,13 +13,17 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class NotificationService {
 
-    private final FirebaseMessaging firebaseMessaging;
+    @Autowired(required = false)
+    private FirebaseMessaging firebaseMessaging;
 
     @Async
     public void sendMessageNotification(String fcmToken, UUID chatId, String senderName) {
+        if (firebaseMessaging == null) {
+            log.debug("Firebase not configured — skipping push notification for chat {}", chatId);
+            return;
+        }
         try {
             Message message = Message.builder()
                 .setToken(fcmToken)

@@ -7,7 +7,6 @@ import org.locationtech.jts.geom.Point;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -83,7 +82,7 @@ public class ServiceListing {
     private boolean isVerified = false;
 
     @Column(name = "verified_at")
-    private LocalDateTime verifiedAt;
+    private Instant verifiedAt;
 
     @Column(name = "custom_questions", columnDefinition = "TEXT")
     @Convert(converter = JsonListConverter.class)

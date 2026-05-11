@@ -7,7 +7,6 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -41,7 +40,7 @@ public class Booking {
     private BookingStatus status = BookingStatus.PENDING;
 
     @Column(name = "scheduled_at", nullable = false)
-    private LocalDateTime scheduledAt;
+    private Instant scheduledAt;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_type", nullable = false)

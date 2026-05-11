@@ -63,11 +63,6 @@ class ReviewServiceTest {
         when(userRepository.findById(clientId)).thenReturn(Optional.of(client));
         Review saved = Review.builder().id(UUID.randomUUID()).listing(listing).client(client).rating(5).build();
         when(reviewRepository.save(any())).thenReturn(saved);
-        when(reviewRepository.findAverageRatingByListingId(listingId)).thenReturn(Optional.of(5.0));
-        when(reviewRepository.countByListingId(listingId)).thenReturn(1L);
-        when(reviewRepository.findAverageRatingByProviderId(providerId)).thenReturn(Optional.of(5.0));
-        when(reviewRepository.countByProviderId(providerId)).thenReturn(1L);
-        when(userRepository.findById(providerId)).thenReturn(Optional.of(provider));
         when(userRepository.save(provider)).thenReturn(provider);
         when(listingRepository.save(listing)).thenReturn(listing);
 
@@ -124,17 +119,16 @@ class ReviewServiceTest {
 
     @Test
     void create_providerRatingUpdatedAcrossMultipleListings() {
+        // Provider already has 1 review (rating 5.0) from another listing.
+        // After a new review with rating 3, incremental formula gives avg = (5*1+3)/2 = 4.00.
+        provider.setReviewCount(1);
+        provider.setRating(BigDecimal.valueOf(5.0));
+
         when(listingRepository.findById(listingId)).thenReturn(Optional.of(listing));
         when(reviewRepository.existsByListingIdAndClientId(listingId, clientId)).thenReturn(false);
         when(userRepository.findById(clientId)).thenReturn(Optional.of(client));
         Review saved = Review.builder().id(UUID.randomUUID()).listing(listing).client(client).rating(3).build();
         when(reviewRepository.save(any())).thenReturn(saved);
-        when(reviewRepository.findAverageRatingByListingId(listingId)).thenReturn(Optional.of(3.0));
-        when(reviewRepository.countByListingId(listingId)).thenReturn(1L);
-        // Provider has 2 reviews across listings: avg 4.0
-        when(reviewRepository.findAverageRatingByProviderId(providerId)).thenReturn(Optional.of(4.0));
-        when(reviewRepository.countByProviderId(providerId)).thenReturn(2L);
-        when(userRepository.findById(providerId)).thenReturn(Optional.of(provider));
         when(userRepository.save(provider)).thenReturn(provider);
         when(listingRepository.save(listing)).thenReturn(listing);
 

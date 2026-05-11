@@ -3,6 +3,8 @@ package com.localpro.chat;
 import com.localpro.user.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Generated;
+import org.hibernate.generator.EventType;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -37,5 +39,6 @@ public class Message {
     private Boolean isRead = false;
 
     @Column(name = "created_at", insertable = false, updatable = false)
+    @Generated(event = EventType.INSERT)
     private Instant createdAt;
 }

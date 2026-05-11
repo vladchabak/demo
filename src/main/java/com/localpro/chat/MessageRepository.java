@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -16,8 +15,7 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
 
     int countByChatIdAndIsReadFalseAndSenderIdNot(UUID chatId, UUID userId);
 
-    @Transactional
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE Message m SET m.isRead = true WHERE m.chat.id = :chatId AND m.sender.id != :userId")
     void markAllAsRead(@Param("chatId") UUID chatId, @Param("userId") UUID userId);
 }

@@ -3,6 +3,7 @@ package com.localpro.booking;
 import com.localpro.booking.dto.BookingResponse;
 import com.localpro.booking.dto.CalendarLinks;
 import com.localpro.booking.dto.CreateBookingRequest;
+import com.localpro.listing.ListingStatus;
 import com.localpro.listing.ServiceListing;
 import com.localpro.listing.ServiceListingRepository;
 import com.localpro.user.User;
@@ -25,8 +26,8 @@ public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final ServiceListingRepository listingRepository;
-    private final MockPaymentService paymentService;
-    private final MockCalendarService calendarService;
+    private final PaymentService paymentService;
+    private final CalendarService calendarService;
 
     public BookingResponse create(User customer, CreateBookingRequest req) {
         log.info("Creating booking for listing {} by customer {}, paymentType: {}, scheduledAt: {}",
@@ -35,14 +36,11 @@ public class BookingService {
         ServiceListing listing = listingRepository.findByIdWithDetails(req.listingId())
                 .orElseThrow(() -> new EntityNotFoundException("Listing not found: " + req.listingId()));
 
-        if (listing == null) {
-            throw new EntityNotFoundException("Listing is null for id: " + req.listingId());
+        if (listing.getStatus() != ListingStatus.ACTIVE) {
+            throw new IllegalArgumentException("Listing is not available for booking");
         }
 
         User provider = listing.getProvider();
-        if (provider == null) {
-            throw new IllegalArgumentException("Listing provider is null for listing: " + req.listingId());
-        }
 
         if (customer.getId().equals(provider.getId())) {
             throw new IllegalArgumentException("Cannot book your own listing");

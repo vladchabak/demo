@@ -19,7 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -118,7 +118,7 @@ public class ListingService {
                     return new EntityNotFoundException("Listing not found: " + listingId);
                 });
         listing.setVerified(true);
-        listing.setVerifiedAt(LocalDateTime.now());
+        listing.setVerifiedAt(Instant.now());
         listing.setVisibleOnMap(true);
         ServiceListing saved = listingRepository.save(listing);
         log.info("Listing {} verified successfully", listingId);
@@ -204,12 +204,12 @@ public class ListingService {
     @Transactional(readOnly = true)
     public Page<ServiceListing> search(String query, UUID categoryId, PriceType priceType,
                                        java.math.BigDecimal minPrice, java.math.BigDecimal maxPrice,
-                                       String city, String sortBy, Pageable pageable) {
+                                       String city, SortBy sortBy, Pageable pageable) {
         log.info("=== [ListingService.search] query: {}, category: {}, sortBy: {}, page: {}",
                 query, categoryId, sortBy, pageable.getPageNumber());
 
-        String effectiveSortBy = (sortBy == null || sortBy.isBlank()) ? "newest" : sortBy;
-        return listingRepository.search(query, categoryId, priceType, minPrice, maxPrice, city, effectiveSortBy, pageable);
+        String sortByValue = sortBy != null ? sortBy.name().toLowerCase() : SortBy.NEWEST.name().toLowerCase();
+        return listingRepository.search(query, categoryId, priceType, minPrice, maxPrice, city, sortByValue, pageable);
     }
 
     @Transactional(readOnly = true)

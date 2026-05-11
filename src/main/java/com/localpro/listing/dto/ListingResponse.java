@@ -5,7 +5,6 @@ import com.localpro.listing.PriceType;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,7 +29,7 @@ public record ListingResponse(
         List<String> photoUrls,
         Instant createdAt,
         boolean isVerified,
-        LocalDateTime verifiedAt,
+        Instant verifiedAt,
         List<String> customQuestions,
         boolean isVisibleOnMap
 ) {}
