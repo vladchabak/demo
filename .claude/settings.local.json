@@ -40,7 +40,9 @@
       "Bash(./mvnw clean *)",
       "Bash(./mvnw test *)",
       "Bash(awk '{print $2}')",
-      "Bash(mvn clean *)"
+      "Bash(mvn clean *)",
+      "Bash(cd /d C:\\\\Users\\\\vladc\\\\IdeaProjects\\\\demo)",
+      "Bash(.\\\\mvnw.cmd clean *)"
     ]
   }
 }
