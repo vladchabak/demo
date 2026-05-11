@@ -55,10 +55,13 @@ public class BookingService {
         PaymentStatus paymentStatus = req.paymentType() == PaymentType.CASH
                 ? PaymentStatus.PENDING : PaymentStatus.PAID;
 
-        CalendarType calendarType = req.calendarType() != null ? req.calendarType() : CalendarType.CALENDLY;
-        CalendarLinks links = calendarService.generateLinks(listing.getId(), req.scheduledAt());
-        String calendarEventId = calendarType == CalendarType.GOOGLE_CALENDAR
-                ? links.googleCalendarLink() : links.calendlyLink();
+        CalendarType calendarType = req.calendarType() != null ? req.calendarType() : CalendarType.IN_APP;
+        CalendarLinks links = calendarService.generateLinks(calendarType, listing.getId(), req.scheduledAt());
+        String calendarEventId = switch (calendarType) {
+            case IN_APP -> null;
+            case CALENDLY -> links.calendlyLink();
+            case GOOGLE_CALENDAR -> links.googleCalendarLink();
+        };
 
         Booking booking = Booking.builder()
                 .listing(listing)
@@ -149,6 +152,7 @@ public class BookingService {
 
     private BookingResponse toResponse(Booking booking) {
         CalendarLinks links = calendarService.generateLinks(
+                booking.getCalendarType(),
                 booking.getListing().getId(),
                 booking.getScheduledAt()
         );
