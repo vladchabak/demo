@@ -50,7 +50,8 @@
       "Bash(xargs grep -l \"@Entity\")",
       "Bash(xargs grep -l \"@Query\\\\|@Modifying\")",
       "Bash(Test-Path C:\\\\Users\\\\vladc\\\\IdeaProjects\\\\demo\\\\src\\\\test\\\\java\\\\com\\\\localpro\\\\booking *)",
-      "Bash(./mvnw test-compile *)"
+      "Bash(./mvnw test-compile *)",
+      "Bash(timeout 15 ./mvnw spring-boot:run)"
     ]
   }
 }

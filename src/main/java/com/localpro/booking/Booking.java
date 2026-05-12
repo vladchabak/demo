@@ -63,6 +63,9 @@ public class Booking {
     @Column(name = "calendar_event_id")
     private String calendarEventId;
 
+    @Column(name = "cancellation_reason")
+    private String cancellationReason;
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private Instant createdAt;
 

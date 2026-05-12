@@ -95,12 +95,12 @@ class BookingIntegrationTest extends AbstractIntegrationTest {
         BookingResponse body = response.getBody();
         assertThat(body).isNotNull();
         assertThat(body.id()).isNotNull();
-        assertThat(body.listingId()).isEqualTo(listingId);
-        assertThat(body.customerId()).isEqualTo(devUser.getId());
+        assertThat(body.listing().id()).isEqualTo(listingId);
+        assertThat(body.customer().id()).isEqualTo(devUser.getId());
         assertThat(body.status()).isEqualTo(BookingStatus.PENDING);
-        assertThat(body.paymentType()).isEqualTo(PaymentType.CASH);
-        assertThat(body.paymentStatus()).isEqualTo(PaymentStatus.PENDING);
-        assertThat(body.totalPrice()).isEqualByComparingTo(BigDecimal.valueOf(100));
+        assertThat(body.payment().type()).isEqualTo(PaymentType.CASH);
+        assertThat(body.payment().status()).isEqualTo(PaymentStatus.PENDING);
+        assertThat(body.payment().totalPrice()).isEqualByComparingTo(BigDecimal.valueOf(100));
     }
 
     @Test
@@ -124,8 +124,8 @@ class BookingIntegrationTest extends AbstractIntegrationTest {
         BookingResponse body = response.getBody();
         assertThat(body).isNotNull();
         assertThat(body.status()).isEqualTo(BookingStatus.PENDING);
-        assertThat(body.paymentType()).isEqualTo(PaymentType.CREDIT_CARD);
-        assertThat(body.paymentStatus()).isEqualTo(PaymentStatus.PAID);
+        assertThat(body.payment().type()).isEqualTo(PaymentType.CREDIT_CARD);
+        assertThat(body.payment().status()).isEqualTo(PaymentStatus.PAID);
     }
 
     @Test

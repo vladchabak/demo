@@ -57,6 +57,30 @@ public class NotificationService {
         }
     }
 
+    @Async
+    public void sendBookingCreatedNotification(String fcmToken, UUID bookingId,
+                                                String customerName, String listingTitle) {
+        if (firebaseMessaging == null || fcmToken == null) {
+            log.debug("Firebase not configured or no FCM token — skipping booking notification");
+            return;
+        }
+        try {
+            Message message = Message.builder()
+                    .setToken(fcmToken)
+                    .putData("bookingId", bookingId.toString())
+                    .putData("type", "NEW_BOOKING")
+                    .setNotification(Notification.builder()
+                            .setTitle("New booking request")
+                            .setBody(customerName + " booked \"" + listingTitle + "\"")
+                            .build())
+                    .build();
+            firebaseMessaging.send(message);
+            log.info("Booking notification sent for booking {}", bookingId);
+        } catch (FirebaseMessagingException e) {
+            log.warn("FCM booking notification failed for {}: {}", bookingId, e.getMessage());
+        }
+    }
+
     private void doSend(String fcmToken, UUID chatId, String title, String body)
             throws FirebaseMessagingException {
         Message message = Message.builder()
