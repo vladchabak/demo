@@ -10,3 +10,5 @@ spring:
 
 app:
   dev-mode: true
+
+CLOUDINARY_URL: cloudinary://test:test@testcloud

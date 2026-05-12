@@ -147,7 +147,7 @@ public class ChatService {
                 : chat.getClient().getId();
 
         MessageResponse response = messageMapper.toResponse(saved);
-        messagingTemplate.convertAndSendToUser(recipientId.toString(), "/queue/messages", response);
+        messagingTemplate.convertAndSend("/topic/chats/" + chatId, response);
 
         // Push notification for offline recipients — only when Firebase is configured
         if (notificationService != null) {
