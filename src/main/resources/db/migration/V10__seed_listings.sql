@@ -1,0 +1,221 @@
+-- Seed provider users
+INSERT INTO users (id, firebase_uid, email, name, role, bio, phone, rating, review_count, is_active) VALUES
+    ('a1000000-0000-0000-0000-000000000001', 'seed_provider_001', 'maria.georgiou@seed.local',  'Maria Georgiou',  'PROVIDER', 'Professional cleaner with 8 years experience in residential and commercial cleaning.', '+357 99 111 001', 4.80, 42, true),
+    ('a1000000-0000-0000-0000-000000000002', 'seed_provider_002', 'antonis.stavrou@seed.local', 'Antonis Stavrou', 'PROVIDER', 'Licensed plumber specialising in bathrooms, leaks, and full installations.', '+357 99 111 002', 4.70, 31, true),
+    ('a1000000-0000-0000-0000-000000000003', 'seed_provider_003', 'elena.petrou@seed.local',   'Elena Petrou',   'PROVIDER', 'Qualified maths and English tutor. University graduate, 5 years tutoring.', '+357 99 111 003', 4.90, 58, true),
+    ('a1000000-0000-0000-0000-000000000004', 'seed_provider_004', 'christos.andreou@seed.local','Christos Andreou','PROVIDER', 'General handyman — repairs, appliances, furniture assembly. Fast and reliable.', '+357 99 111 004', 4.60, 27, true),
+    ('a1000000-0000-0000-0000-000000000005', 'seed_provider_005', 'sofia.ioannou@seed.local',  'Sofia Ioannou',  'PROVIDER', 'Mobile hairdresser and nail artist. I come to you anywhere in Nicosia or Limassol.', '+357 99 111 005', 4.85, 73, true);
+
+-- Seed listings
+-- Uses subqueries for category_id to stay independent of generated UUIDs.
+INSERT INTO service_listings
+    (provider_id, category_id, title, description, price, price_type, location, address, city, status, is_verified, is_visible_on_map, view_count)
+VALUES
+
+-- ── Cleaning ──────────────────────────────────────────────────────────────────
+('a1000000-0000-0000-0000-000000000001',
+ (SELECT id FROM categories WHERE name = 'Cleaning'),
+ 'Apartment Deep Clean – Nicosia',
+ 'Thorough top-to-bottom cleaning of 1–3 bedroom apartments. Eco-friendly products, all equipment included. Same-day booking available.',
+ 60.00, 'PER_SERVICE',
+ ST_SetSRID(ST_MakePoint(33.3823, 35.1856), 4326),
+ 'Stasikratous St, Nicosia', 'Nicosia', 'ACTIVE', true, true, 18),
+
+('a1000000-0000-0000-0000-000000000001',
+ (SELECT id FROM categories WHERE name = 'Cleaning'),
+ 'House Cleaning – Limassol',
+ 'Regular or one-off house cleaning. I bring all supplies. 2–5 bedroom houses.',
+ 75.00, 'PER_SERVICE',
+ ST_SetSRID(ST_MakePoint(33.0450, 34.6830), 4326),
+ 'Anexartisias St, Limassol', 'Limassol', 'ACTIVE', true, true, 11),
+
+('a1000000-0000-0000-0000-000000000001',
+ (SELECT id FROM categories WHERE name = 'Cleaning'),
+ 'Office Cleaning – Larnaca',
+ 'After-hours office cleaning. Monthly contracts available. Trusted by 10+ businesses.',
+ 40.00, 'PER_SERVICE',
+ ST_SetSRID(ST_MakePoint(33.6250, 34.9200), 4326),
+ 'Grigori Afxentiou Ave, Larnaca', 'Larnaca', 'ACTIVE', true, true, 7),
+
+('a1000000-0000-0000-0000-000000000001',
+ (SELECT id FROM categories WHERE name = 'Cleaning'),
+ 'Airbnb Turnover Cleaning – Paphos',
+ 'Fast, reliable turnover cleaning for short-term rentals. Can handle same-day checkout/checkin.',
+ 50.00, 'PER_SERVICE',
+ ST_SetSRID(ST_MakePoint(32.4253, 34.7760), 4326),
+ 'Poseidonos Ave, Paphos', 'Paphos', 'ACTIVE', true, true, 24),
+
+('a1000000-0000-0000-0000-000000000001',
+ (SELECT id FROM categories WHERE name = 'Cleaning'),
+ 'Post-Construction Clean – Nicosia',
+ 'Specialist dust and debris removal after renovation or construction. Fully insured.',
+ 120.00, 'PER_SERVICE',
+ ST_SetSRID(ST_MakePoint(33.3650, 35.1780), 4326),
+ 'Arch. Makarios III Ave, Nicosia', 'Nicosia', 'ACTIVE', true, true, 5),
+
+-- ── Plumbing ──────────────────────────────────────────────────────────────────
+('a1000000-0000-0000-0000-000000000002',
+ (SELECT id FROM categories WHERE name = 'Plumbing'),
+ 'Plumbing Repairs – Nicosia',
+ 'Leaks, dripping taps, blocked drains, pipe replacements. Emergency call-outs welcome.',
+ 35.00, 'PER_HOUR',
+ ST_SetSRID(ST_MakePoint(33.3900, 35.1900), 4326),
+ 'Ledra St, Nicosia', 'Nicosia', 'ACTIVE', true, true, 15),
+
+('a1000000-0000-0000-0000-000000000002',
+ (SELECT id FROM categories WHERE name = 'Plumbing'),
+ 'Bathroom Installation – Limassol',
+ 'Full bathroom fit-outs: shower trays, toilets, basins, pipework. Free estimate.',
+ 40.00, 'PER_HOUR',
+ ST_SetSRID(ST_MakePoint(33.0310, 34.6870), 4326),
+ 'Gladstonos St, Limassol', 'Limassol', 'ACTIVE', true, true, 9),
+
+('a1000000-0000-0000-0000-000000000002',
+ (SELECT id FROM categories WHERE name = 'Plumbing'),
+ 'Leak Detection & Fix – Larnaca',
+ 'Non-invasive leak detection using thermal imaging. No unnecessary breaking of walls.',
+ 90.00, 'PER_SERVICE',
+ ST_SetSRID(ST_MakePoint(33.6310, 34.9260), 4326),
+ 'Finikoudes Promenade, Larnaca', 'Larnaca', 'ACTIVE', true, true, 6),
+
+-- ── Tutoring ──────────────────────────────────────────────────────────────────
+('a1000000-0000-0000-0000-000000000003',
+ (SELECT id FROM categories WHERE name = 'Tutoring'),
+ 'Maths Tutor (GCSE / A-Level) – Nicosia',
+ 'Patient, results-focused maths tutoring. Students improved an average of 2 grades.',
+ 25.00, 'PER_HOUR',
+ ST_SetSRID(ST_MakePoint(33.3750, 35.1800), 4326),
+ 'Metochiou St, Nicosia', 'Nicosia', 'ACTIVE', true, true, 33),
+
+('a1000000-0000-0000-0000-000000000003',
+ (SELECT id FROM categories WHERE name = 'Tutoring'),
+ 'English Conversation & Grammar – Limassol',
+ 'Practical English for adults and teens. Business English, exam prep (IELTS/FCE), or general.',
+ 20.00, 'PER_HOUR',
+ ST_SetSRID(ST_MakePoint(33.0380, 34.6800), 4326),
+ 'Spyrou Araouzou St, Limassol', 'Limassol', 'ACTIVE', true, true, 21),
+
+('a1000000-0000-0000-0000-000000000003',
+ (SELECT id FROM categories WHERE name = 'Tutoring'),
+ 'Piano Lessons for All Ages – Larnaca',
+ 'Classical and contemporary piano. Absolute beginners welcome. Grade exams available.',
+ 30.00, 'PER_HOUR',
+ ST_SetSRID(ST_MakePoint(33.6180, 34.9150), 4326),
+ 'Kimon St, Larnaca', 'Larnaca', 'ACTIVE', true, true, 14),
+
+-- ── Beauty & Wellness ─────────────────────────────────────────────────────────
+('a1000000-0000-0000-0000-000000000005',
+ (SELECT id FROM categories WHERE name = 'Beauty & Wellness'),
+ 'Mobile Hairdresser – Nicosia',
+ 'Cut, colour, blowdry at your home or office. Bridal packages available.',
+ 45.00, 'PER_SERVICE',
+ ST_SetSRID(ST_MakePoint(33.3700, 35.1870), 4326),
+ 'Omirou St, Nicosia', 'Nicosia', 'ACTIVE', true, true, 29),
+
+('a1000000-0000-0000-0000-000000000005',
+ (SELECT id FROM categories WHERE name = 'Beauty & Wellness'),
+ 'Relaxation Massage – Limassol',
+ 'Swedish and deep-tissue massage at your location. 60 or 90 min sessions.',
+ 55.00, 'PER_SERVICE',
+ ST_SetSRID(ST_MakePoint(33.0420, 34.6850), 4326),
+ 'Navarinou St, Limassol', 'Limassol', 'ACTIVE', true, true, 18),
+
+('a1000000-0000-0000-0000-000000000005',
+ (SELECT id FROM categories WHERE name = 'Beauty & Wellness'),
+ 'Nail Art & Gel Nails – Paphos',
+ 'Gel manicure, nail art, pedicure. I travel to you. Portfolio on Instagram.',
+ 35.00, 'PER_SERVICE',
+ ST_SetSRID(ST_MakePoint(32.4220, 34.7740), 4326),
+ 'Tombs of the Kings Rd, Paphos', 'Paphos', 'ACTIVE', true, true, 12),
+
+-- ── Repairs ───────────────────────────────────────────────────────────────────
+('a1000000-0000-0000-0000-000000000004',
+ (SELECT id FROM categories WHERE name = 'Repairs'),
+ 'Handyman Services – Nicosia',
+ 'Shelves, curtain rails, TV mounting, minor fixes. No job too small.',
+ 30.00, 'PER_HOUR',
+ ST_SetSRID(ST_MakePoint(33.3860, 35.1840), 4326),
+ 'Diagorou St, Nicosia', 'Nicosia', 'ACTIVE', true, true, 22),
+
+('a1000000-0000-0000-0000-000000000004',
+ (SELECT id FROM categories WHERE name = 'Repairs'),
+ 'Appliance Repair – Paphos',
+ 'Washing machines, ovens, dishwashers, refrigerators. Fast turnaround, 3-month warranty.',
+ 50.00, 'PER_SERVICE',
+ ST_SetSRID(ST_MakePoint(32.4280, 34.7780), 4326),
+ 'Apostolou Pavlou Ave, Paphos', 'Paphos', 'ACTIVE', true, true, 8),
+
+('a1000000-0000-0000-0000-000000000004',
+ (SELECT id FROM categories WHERE name = 'Repairs'),
+ 'General Repairs & Maintenance – Famagusta Area',
+ 'All-round maintenance: doors, windows, locks, fencing, minor electrical. Serving Famagusta–Larnaca corridor.',
+ 35.00, 'PER_HOUR',
+ ST_SetSRID(ST_MakePoint(33.9500, 35.1250), 4326),
+ 'Salaminos Ave, Famagusta Area', 'Famagusta Area', 'ACTIVE', true, true, 4),
+
+-- ── Moving ────────────────────────────────────────────────────────────────────
+('a1000000-0000-0000-0000-000000000004',
+ (SELECT id FROM categories WHERE name = 'Moving'),
+ 'Moving Service – Nicosia',
+ 'Local moves with a van and crew of 2. Careful packing/unpacking available as add-on.',
+ 80.00, 'PER_SERVICE',
+ ST_SetSRID(ST_MakePoint(33.3810, 35.1900), 4326),
+ 'Evagoras Ave, Nicosia', 'Nicosia', 'ACTIVE', true, true, 16),
+
+('a1000000-0000-0000-0000-000000000004',
+ (SELECT id FROM categories WHERE name = 'Moving'),
+ 'Furniture Assembly & Delivery – Limassol',
+ 'IKEA and flat-pack assembly. Also handles single-item deliveries within Limassol.',
+ 25.00, 'PER_HOUR',
+ ST_SetSRID(ST_MakePoint(33.0360, 34.6820), 4326),
+ '28th October St, Limassol', 'Limassol', 'ACTIVE', true, true, 10),
+
+-- ── Photography ───────────────────────────────────────────────────────────────
+('a1000000-0000-0000-0000-000000000003',
+ (SELECT id FROM categories WHERE name = 'Photography'),
+ 'Wedding Photography – Nicosia',
+ 'Full-day wedding coverage. 400+ edited photos delivered in 2 weeks. Portfolio on request.',
+ 800.00, 'PER_SERVICE',
+ ST_SetSRID(ST_MakePoint(33.3770, 35.1820), 4326),
+ 'Athalassa Ave, Nicosia', 'Nicosia', 'ACTIVE', true, true, 41),
+
+('a1000000-0000-0000-0000-000000000003',
+ (SELECT id FROM categories WHERE name = 'Photography'),
+ 'Portrait & Family Sessions – Limassol',
+ 'Outdoor and studio portrait shoots. 1-hour session, 50 edited images.',
+ 120.00, 'PER_SERVICE',
+ ST_SetSRID(ST_MakePoint(33.0500, 34.6860), 4326),
+ 'Amathus Ave, Limassol', 'Limassol', 'ACTIVE', true, true, 19),
+
+('a1000000-0000-0000-0000-000000000003',
+ (SELECT id FROM categories WHERE name = 'Photography'),
+ 'Event Photography – Larnaca',
+ 'Conferences, birthdays, corporate events. Candid and posed. Rapid 48h delivery.',
+ 200.00, 'PER_SERVICE',
+ ST_SetSRID(ST_MakePoint(33.6220, 34.9230), 4326),
+ 'Athens Ave, Larnaca', 'Larnaca', 'ACTIVE', true, true, 13),
+
+-- ── IT & Tech ─────────────────────────────────────────────────────────────────
+('a1000000-0000-0000-0000-000000000002',
+ (SELECT id FROM categories WHERE name = 'IT & Tech'),
+ 'Home IT Support – Nicosia',
+ 'Wi-Fi setup, virus removal, slow PC fix, printer issues. Home visits or remote session.',
+ 30.00, 'PER_HOUR',
+ ST_SetSRID(ST_MakePoint(33.3830, 35.1850), 4326),
+ 'Prodromou St, Nicosia', 'Nicosia', 'ACTIVE', true, true, 27),
+
+('a1000000-0000-0000-0000-000000000002',
+ (SELECT id FROM categories WHERE name = 'IT & Tech'),
+ 'Freelance Web Design – Limassol',
+ 'Landing pages and small-business websites. Fast delivery, mobile-first, SEO-ready.',
+ 350.00, 'PER_SERVICE',
+ ST_SetSRID(ST_MakePoint(33.0390, 34.6840), 4326),
+ 'Ikarou St, Limassol', 'Limassol', 'ACTIVE', true, true, 36),
+
+('a1000000-0000-0000-0000-000000000002',
+ (SELECT id FROM categories WHERE name = 'IT & Tech'),
+ 'Laptop & Phone Repair – Nicosia',
+ 'Screen replacements, battery swaps, data recovery, software installs. Same-day for most repairs.',
+ 25.00, 'PER_SERVICE',
+ ST_SetSRID(ST_MakePoint(33.3620, 35.1760), 4326),
+ 'Strovolos Ave, Nicosia', 'Nicosia', 'ACTIVE', true, true, 22);
