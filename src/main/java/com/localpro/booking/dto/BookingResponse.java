@@ -1,32 +1,22 @@
 package com.localpro.booking.dto;
 
 import com.localpro.booking.BookingStatus;
-import com.localpro.booking.CalendarType;
-import com.localpro.booking.PaymentStatus;
-import com.localpro.booking.PaymentType;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
 public record BookingResponse(
         UUID id,
-        UUID listingId,
-        String listingTitle,
-        UUID customerId,
-        String customerName,
-        UUID providerId,
-        String providerName,
         BookingStatus status,
         Instant scheduledAt,
-        PaymentType paymentType,
-        PaymentStatus paymentStatus,
-        BigDecimal totalPrice,
-        String notes,
-        CalendarType calendarType,
-        String calendarEventId,
-        String calendlyLink,
-        String googleCalendarLink,
         Instant createdAt,
-        Instant updatedAt
+        Instant updatedAt,
+        BookingListingInfo listing,
+        BookingProviderInfo provider,
+        BookingCustomerInfo customer,
+        BookingPaymentInfo payment,
+        BookingCalendarInfo calendar,
+        String notes,
+        String cancellationReason,
+        BookingActions actions
 ) {}
