@@ -8,8 +8,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.net.URI;
@@ -24,6 +26,7 @@ public class ListingController {
     private final ListingService listingService;
     private final CategoryService categoryService;
     private final ListingMapper listingMapper;
+    private final PhotoService photoService;
 
     @PostMapping("/listings")
     public ResponseEntity<ListingResponse> create(@CurrentUser User user,
@@ -114,6 +117,28 @@ public class ListingController {
         PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return ResponseEntity.ok(listingService.getByCategory(categoryId, pageable)
                 .map(listingMapper::toResponse));
+    }
+
+    @PostMapping("/listings/{id}/photos")
+    public ResponseEntity<PhotoResponse> uploadPhoto(@CurrentUser User user,
+                                                     @PathVariable UUID id,
+                                                     @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(photoService.upload(user.getId(), id, file));
+    }
+
+    @DeleteMapping("/listings/{id}/photos/{photoId}")
+    public ResponseEntity<Void> deletePhoto(@CurrentUser User user,
+                                            @PathVariable UUID id,
+                                            @PathVariable UUID photoId) {
+        photoService.delete(user.getId(), id, photoId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/listings/{id}/photos/order")
+    public ResponseEntity<List<PhotoResponse>> updatePhotoOrder(@CurrentUser User user,
+                                                                @PathVariable UUID id,
+                                                                @Valid @RequestBody UpdatePhotoOrderRequest request) {
+        return ResponseEntity.ok(photoService.updateOrder(user.getId(), id, request.photoIds()));
     }
 
     @PostMapping("/listings/{id}/verify")

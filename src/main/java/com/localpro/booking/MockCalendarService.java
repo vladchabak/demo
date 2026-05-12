@@ -1,7 +1,6 @@
 package com.localpro.booking;
 
 import com.localpro.booking.dto.CalendarLinks;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -11,7 +10,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 @Service
-@Profile("!prod")
 public class MockCalendarService implements CalendarService {
 
     private static final DateTimeFormatter GCAL_FORMAT =

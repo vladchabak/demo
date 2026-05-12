@@ -106,4 +106,8 @@ public interface ServiceListingRepository extends JpaRepository<ServiceListing, 
     List<ServiceListing> findTop10ByStatusAndIsVerifiedTrueAndIsVisibleOnMapTrueOrderByCreatedAtDesc(ListingStatus status);
 
     Page<ServiceListing> findByCategory_IdAndStatusAndIsVisibleOnMapTrue(UUID categoryId, ListingStatus status, Pageable pageable);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE ServiceListing sl SET sl.reviewCount = :count, sl.rating = :avgRating WHERE sl.id = :id")
+    void updateRatingStats(@Param("id") UUID id, @Param("count") int count, @Param("avgRating") BigDecimal avgRating);
 }
